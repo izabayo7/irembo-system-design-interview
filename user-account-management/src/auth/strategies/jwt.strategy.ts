@@ -20,6 +20,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       where: {
         id: payload.id,
       },
+      include: {
+        accountVerification: true,
+      }
     });
     if (!user) {
       throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);

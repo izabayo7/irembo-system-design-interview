@@ -15,6 +15,7 @@ import {
   ParseFilePipe,
   MaxFileSizeValidator,
   FileTypeValidator,
+  Request,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -139,6 +140,13 @@ export class UserController {
     return this.userService.findAll();
   }
 
+  @Get('current')
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
+  getCurrentUser(@Request() req) {
+    return { ...req.user, password: undefined, tfaSecret: undefined };
+  }
+
   @Get(':id')
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
@@ -236,9 +244,9 @@ export class UserController {
       }
     });
   }
+
   // TODO add api to serve user profile photo
   @Delete(':id')
-  @Get()
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {

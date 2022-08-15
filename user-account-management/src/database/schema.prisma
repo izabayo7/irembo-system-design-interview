@@ -84,6 +84,6 @@ enum MaritalStatuses {
 
 enum VerificationStatuses {
   UNVERIFIED
-  PENDING
+  PENDING_VERIFICATION
   VERIFIED
 }
