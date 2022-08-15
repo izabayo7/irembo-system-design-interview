@@ -1,0 +1,75 @@
+version: '3'
+
+services:
+  frontend:
+    image: izabayo7/user-account-mis:latest
+    build: ./client/
+    ports:
+      - 3000:3000
+    depends_on:
+      - backend
+  backend:
+    image: izabayo7/user-account-mis-api:latest
+    build: ./user-account-management/
+    ports:
+      - 5000:3000
+    depends_on:
+      - db
+  db:
+    image: izabayo7/user-account-mis-db:latest
+    build: ./deploy/db/
+    ports:
+      - 5432:5432
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: irembo@2020
+      POSTGRES_DB: userAccountMis
+    volumes:
+      - './data:/var/lib/postgresql/data '
+
+  nginx:
+    image: izabayo7/user-account-mis-nginx:latest
+    build: ./deploy/nginx/
+    mem_limit: 128m
+    hostname: nginx
+    ports:
+      - 80:80
+    depends_on:
+      - frontend
+  # dev:
+  #   container_name: backend_api_dev
+  #   image: backend-api-dev:1.0.0
+  #   build:
+  #     context: ./user-account-management
+  #     target: development
+  #     dockerfile: Dockerfile
+  #   command: npm run start:debug
+  #   ports:
+  #     - 3000:3000
+  #     - 9229:9229
+  #   networks:
+  #     - nesjs-network
+  #   volumes:
+  #     - .:/usr/src/app
+  #     - /usr/src/app/node_modules
+  #   restart: unless-stopped
+  # prod:
+  #   container_name: backend_api_prod
+  #   image: backend-api-prod:1.0.0
+  #   build:
+  #     context: ./user-account-management
+  #     target: production
+  #     dockerfile: Dockerfile
+  #   command: npm run start:prod
+  #   ports:
+  #     - 3000:3000
+  #     - 9229:9229
+  #   networks:
+  #     - nesjs-network
+  #   volumes:
+  #     - .:/usr/src/app
+  #     - /usr/src/app/node_modules
+  #   restart: unless-stopped
+
+networks:
+  nesjs-network:
