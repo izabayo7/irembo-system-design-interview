@@ -36,10 +36,13 @@
     "@nestjs/throttler": "^3.0.0",
     "@prisma/client": "^4.2.1",
     "@sendgrid/mail": "^7.7.0",
+    "bcryptjs": "^2.4.3",
+    "class-validator": "^0.13.2",
     "helmet": "^5.1.1",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",

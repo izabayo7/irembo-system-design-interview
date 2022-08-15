@@ -17,11 +17,11 @@ datasource db {
 
 model User {
   id                  String               @id @default(cuid())
-  firstName           String?
-  lastName            String?
+  firstName           String
+  lastName            String
   gender              Genders
   email               String               @unique
-  dateOfBirth         DateTime?
+  dateOfBirth         DateTime
   profilePhoto        String?
   tfaEnabled          Boolean?             @default(true)
   tfaSecret           String?
@@ -29,8 +29,9 @@ model User {
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   maritalStatus       MaritalStatuses
-  role                Roles
+  role                Roles                @default(USER)
   accountVerification AccountVerification?
+  PasswordReset       PasswordReset?
 }
 
 model AccountVerification {
@@ -39,6 +40,18 @@ model AccountVerification {
   user               User                 @relation(fields: [userId], references: [id])
   officialDocument   String?
   nidOrPassport      String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  verificationStatus VerificationStatuses @default(UNVERIFIED)
+}
+
+model PasswordReset {
+  id                 String               @id @default(cuid())
+  userId             String               @unique
+  user               User                 @relation(fields: [userId], references: [id])
+  token              String
+  isActive           Boolean              @default(true)
+  validUntil         DateTime
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   verificationStatus VerificationStatuses @default(UNVERIFIED)
