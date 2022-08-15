@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   HttpException,
+  HttpStatus,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -28,12 +29,13 @@ export class AuthService {
       where: { email },
     });
 
-    if (!user) throw new HttpException('Invalid credentials', 401);
+    if (!user)
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
 
     const isPasswordValid = await compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new HttpException('Invalid credentials', 401);
+      throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 
     // if (user.tfaEnabled) {
@@ -70,7 +72,8 @@ export class AuthService {
       },
     });
 
-    if (!userExists) throw new HttpException('User not found', 404);
+    if (!userExists)
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
     const passwordReset = await this.prismaService.passwordReset.findUnique({
       where: { userId: userExists.id },
@@ -101,10 +104,13 @@ export class AuthService {
     });
 
     if (!passwordReset)
-      throw new HttpException('Password reset not found', 404);
+      throw new HttpException('Password reset not found', HttpStatus.NOT_FOUND);
 
     if (passwordReset.validUntil < new Date())
-      throw new HttpException('Password reset token expired', 404);
+      throw new HttpException(
+        'Password reset token expired',
+        HttpStatus.NOT_FOUND,
+      );
 
     const hashedPassword = await hash(updatePasswordResetDto.password);
 

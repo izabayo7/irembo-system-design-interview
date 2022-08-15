@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-use-before-define */
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from 'src/database/services/prisma.service';
@@ -15,14 +15,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(id: string) {
+  async validate(payload: any) {
     const user = await this.prismaService.user.findUnique({
       where: {
-        id,
+        id: payload.id,
       },
     });
     if (!user) {
-      throw new Error();
+      throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
     }
     return user;
   }

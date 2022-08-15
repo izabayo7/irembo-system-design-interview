@@ -1,20 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { ResponseStatus } from 'src/common/enums/responseStatus.enum';
 import { SendGridService } from 'src/common/services/sendgrid.service';
 import { PrismaService } from 'src/database/services/prisma.service';
-import { CreatePasswordResetDto } from './dto/create-password-reset.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { LoginDto } from './dto/login.dto';
-import { UpdatePasswordResetDto } from './dto/update-password-reset.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { v4 } from 'uuid';
 import { hash } from 'src/utils/password';
+import { JwtService } from '@nestjs/jwt';
+import { Roles } from '@prisma/client';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly sendgridService: SendGridService,
+    private readonly jwtService: JwtService,
   ) { }
 
   public async checkIfUserExists(email: string) {
@@ -35,16 +34,27 @@ export class UserService {
     const exists = await this.checkIfUserExists(createUserDto.email);
 
     if (exists)
-      return {
-        status: ResponseStatus.FAILURE,
-        message: 'User with the same email already exist',
-      };
+      throw new HttpException(
+        'User with the same email already exist',
+        HttpStatus.NOT_FOUND,
+      );
+
+    if (createUserDto.role === Roles.ADMIN) {
+      const adminFound = await this.prismaService.user.findFirst({
+        where: {
+          role: Roles.ADMIN,
+        },
+      });
+      if (adminFound)
+        throw new HttpException('Admin already exists', HttpStatus.BAD_REQUEST);
+    }
 
     const hashedPassword = await hash(createUserDto.password);
 
     const res = await this.prismaService.user.create({
       data: {
         ...createUserDto,
+        dateOfBirth: new Date(createUserDto.dateOfBirth).toISOString(),
         password: hashedPassword,
       },
     });
@@ -56,38 +66,94 @@ export class UserService {
       },
     });
 
-    return {
-      status: ResponseStatus.SUCCESS,
-      message: 'User created successfully',
-    };
+    return res;
   }
 
-  login(loginDto: LoginDto) {
-    return 'This action adds a new user';
+  async findAll() {
+    return await this.prismaService.user.findMany({
+      where: {
+        role: Roles.USER,
+      },
+      include: {
+        accountVerification: true,
+      },
+    });
   }
 
-  createPasswordReset(createPasswordResetDto: CreatePasswordResetDto) {
-    return 'This action adds a new user';
+  async findOne(id: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        accountVerification: true,
+      },
+    });
+    if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+
+    return user;
   }
 
-  updatePasswordReset(updatePasswordResetDto: UpdatePasswordResetDto) {
-    return 'This action adds a new user';
+  async update(id: string, updateUserDto: UpdateUserDto) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        accountVerification: true,
+      },
+    });
+    if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    console.log(updateUserDto);
+    return await this.prismaService.user.update({
+      where: {
+        id,
+      },
+      data: {
+        ...updateUserDto,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all user`;
-  }
+  async remove(id: string) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        id,
+      },
+      include: {
+        accountVerification: true,
+        PasswordReset: true,
+        RefreshToken: true,
+      },
+    });
+    if (!user) throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+    if (user.accountVerification)
+      await this.prismaService.accountVerification.delete({
+        where: {
+          userId: id,
+        },
+      });
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+    if (user.PasswordReset)
+      await this.prismaService.refreshToken.delete({
+        where: {
+          userId: id,
+        },
+      });
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+    if (user.RefreshToken)
+      await this.prismaService.passwordReset.delete({
+        where: {
+          userId: id,
+        },
+      });
+
+    return await this.prismaService.user.delete({
+      where: {
+        id,
+      },
+    });
   }
 
   /**
