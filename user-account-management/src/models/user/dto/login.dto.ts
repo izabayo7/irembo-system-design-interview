@@ -17,7 +17,7 @@ export class LoginDto {
   @MaxLength(20, {
     message: " The password can't accept more than 20 characters ",
   })
-  @Matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,20}$/, {
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.{8,20})/, {
     message:
       ' A password at least contains one numeric digit, one supercase char and one lowercase char',
   })
