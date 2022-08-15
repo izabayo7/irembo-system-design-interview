@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Generate ERD
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String               @id @default(cuid())
+  firstName           String?
+  lastName            String?
+  gender              Genders
+  email               String               @unique
+  dateOfBirth         DateTime?
+  profilePhoto        String?
+  tfaEnabled          Boolean?             @default(true)
+  tfaSecret           String?
+  password            String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  maritalStatus       MaritalStatuses
+  role                Roles
+  accountVerification AccountVerification?
+}
+
+model AccountVerification {
+  id                 String               @id @default(cuid())
+  userId             String               @unique
+  user               User                 @relation(fields: [userId], references: [id])
+  officialDocument   String?
+  nidOrPassport      String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  verificationStatus VerificationStatuses @default(UNVERIFIED)
+}
+
+enum Genders {
+  MALE
+  FEMALE
+}
+
+enum Roles {
+  ADMIN
+  USER
+}
+
+enum MaritalStatuses {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+enum VerificationStatuses {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+}
