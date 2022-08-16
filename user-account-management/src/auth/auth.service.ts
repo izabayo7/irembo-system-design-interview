@@ -41,11 +41,7 @@ export class AuthService {
         const secret = Math.floor(100000 + Math.random() * 900000);
 
         const mail = {
-          to: await this.prismaService.user.findMany({
-            select: {
-              email: true,
-            },
-          }),
+          to: user.email,
           from: `${process.env.fromEmail}`,
           subject: 'User Account Management System - 2FA',
           templateId: `${process.env.templateId}`,
