@@ -215,7 +215,12 @@ function Login() {
           <div className="modal-title text-center my-10">
             Signup
           </div>
-          <div className="modal-body">
+          <div className="modal-body" style={{
+            maxHeight: '60vh',
+            overflowY: 'auto',
+            display: 'flex',
+            justifyContent: 'center'
+          }}>
             <form>
               <div className="">
                 <div className="px-4 py-5 bg-white sm:p-6">
