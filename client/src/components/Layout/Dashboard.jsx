@@ -51,9 +51,7 @@ const DashboardLayout = ({ children }) => {
   }, [loaded]);
 
   useEffect(() => {
-    if (user) {
-      setLoaded(true);
-    }
+    setLoaded(true);
   }, [user]);
 
 
