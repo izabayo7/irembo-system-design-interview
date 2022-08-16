@@ -43,9 +43,12 @@ function AccountView({ user, handleClick, role }) {
       </div>
       {
         accountInfo.accountVerification?.verificationStatus !== "UNVERIFIED" ?
-          <div className='identificationDoc' style={{
-            backgroundImage: `url(${API_URL}/verification/document/${accountInfo.accountVerification?.officialDocument}?token=${token})`
-          }}></div> : role !== "ADMIN" ?
+          <div>
+            <div className="names">User Identification document</div>
+            <div className='identificationDoc' style={{
+              backgroundImage: `url(${API_URL}/verification/document/${accountInfo.accountVerification?.officialDocument}?token=${token})`
+            }}></div>
+          </div> : role !== "ADMIN" ?
             <div>
               <button onClick={handleClick}>Upload identification infromation</button>
             </div> : ''

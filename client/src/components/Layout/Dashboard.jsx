@@ -190,12 +190,12 @@ const DashboardLayout = ({ children }) => {
                 <div className="px-4 py-5 bg-white sm:p-6">
                   <div className="grid grid-cols-6 gap-6">
                     <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="first-name" className="block text-sm font-medium text-gray-700">First name`</label>
+                      <label htmlFor="first-name" className="block text-sm font-medium text-gray-700">First name</label>
                       <input defaultValue={user?.firstName} onChange={(e) => { setLoggedInUser({ ...user, firstName: e.target.value || "" }) }} type="text" id="first-name" className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
                     </div>
 
                     <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="last-name" className="block text-sm font-medium text-gray-700">Last name`</label>
+                      <label htmlFor="last-name" className="block text-sm font-medium text-gray-700">Last name</label>
                       <input defaultValue={user?.lastName} onChange={(e) => { setLoggedInUser({ ...user, lastName: e.target.value || "" }) }} type="text" id="last-name" className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" />
                     </div>
 
