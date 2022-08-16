@@ -35,6 +35,9 @@ function AccountView({ user, handleClick, role }) {
               parseInt(new Date().getFullYear()) - parseInt(new Date(accountInfo.dateOfBirth).getFullYear())
             } years</div>
           </div>
+          <div className="flex">
+            <div className="other-details">{accountInfo.nationality}</div>
+          </div>
           <div className="other-details nid">{accountInfo.accountVerification?.nidOrPassport}</div>
         </div>
       </div>

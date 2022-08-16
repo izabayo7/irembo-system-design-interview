@@ -1,4 +1,4 @@
-import { Genders, MaritalStatuses, Roles } from '@prisma/client';
+import { Genders, MaritalStatuses, Nationalities, Roles } from '@prisma/client';
 import { IsDateString, IsEnum, IsNotEmpty } from 'class-validator';
 import { LoginDto } from './login.dto';
 
@@ -8,6 +8,10 @@ export class CreateUserDto extends LoginDto {
 
   @IsNotEmpty()
   readonly lastName: string;
+
+  @IsNotEmpty()
+  @IsEnum(Nationalities, { each: true })
+  readonly nationality: Nationalities;
 
   @IsNotEmpty()
   @IsEnum(Genders, { each: true })

@@ -67,6 +67,9 @@ export class UserController {
         lastName: {
           type: 'string',
         },
+        nationality: {
+          type: 'string',
+        },
         gender: {
           type: 'string',
           enum: ['MALE', 'FEMALE'],
@@ -186,6 +189,9 @@ export class UserController {
         lastName: {
           type: 'string',
         },
+        nationality: {
+          type: 'string',
+        },
         gender: {
           type: 'string',
           enum: ['MALE', 'FEMALE'],
@@ -242,6 +248,9 @@ export class UserController {
         lastName: {
           type: 'string',
         },
+        nationality: {
+          type: 'string',
+        },
         gender: {
           type: 'string',
           enum: ['MALE', 'FEMALE'],
@@ -264,6 +273,7 @@ export class UserController {
         'email',
         'password',
         'lastName',
+        'nationality',
         'gender',
         'maritalStatus',
         'dateOfBirth',
