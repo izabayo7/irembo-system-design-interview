@@ -20,7 +20,7 @@ export const AuthSlice = createSlice({
     },
     updateUser: (state, action) => {
       for (const i in state.users) {
-        if (state.users[i]._id === action.payload._id) {
+        if (state.users[i].id === action.payload.id) {
           state.users[i] = action.payload;
         }
       }
