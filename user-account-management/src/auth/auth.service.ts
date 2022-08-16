@@ -118,7 +118,7 @@ export class AuthService {
       dynamicTemplateData: {
         header: 'Password Reset',
         text:
-          'You requested a password reset which will expire' +
+          'You requested a password reset which will expire ' +
           validUntil.toLocaleString() +
           ' (in 20 minutes). Please use the button below to continue the process.',
         c2a_link: process.env.FRONTEND_URL + '/reset-password/' + token,

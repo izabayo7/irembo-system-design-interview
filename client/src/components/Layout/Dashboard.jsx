@@ -45,11 +45,16 @@ const DashboardLayout = ({ children }) => {
   useEffect(() => {
     if (!loaded) {
       dispatch(loadUser());
-      setLoaded(true);
     } else if (!user) {
       navigate('/login');
     }
   }, [loaded]);
+
+  useEffect(() => {
+    if (user) {
+      setLoaded(true);
+    }
+  }, [user]);
 
 
   useEffect(() => {
@@ -129,6 +134,7 @@ const DashboardLayout = ({ children }) => {
           <div id="logo" className="flex justify-center">
             <img
               alt="Coat of Arms of Rwanda logo"
+              style={{ width: '146.172px', height: '81px' }}
               src={logo}
             />
           </div>

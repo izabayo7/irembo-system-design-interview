@@ -164,7 +164,7 @@ function Login() {
     <div className="bg-primary h-screen flex justify-center">
       <div className="form bg-main flex max-w-md w-screen h-max justify-center p-8 m-auto">
         {pageStatus === "LOGIN" ? <form className='text-center' onSubmit={handleLogin}>
-          <img src={logo} className="mb-9 mx-auto" alt="" />
+          <img style={{ width: '279px', height: '60px' }} src={logo} className="mb-9 mx-auto" alt="" />
           <div className="title mb-8">Welcome to <br />
             <div className="small">User Account Management System</div></div>
           <div className="input-container  mb-8">
@@ -186,7 +186,7 @@ function Login() {
           </div>
         </form> :
           <form className='text-center' onSubmit={handleLogin}>
-            <img src={logo} className="mb-9 mx-auto" alt="" />
+            <img style={{ width: '279px', height: '60px' }} src={logo} className="mb-9 mx-auto" alt="" />
             <div className="title mb-8">Enter the 6 digit code <br />
               <div className="small"> which was sent to your email.</div></div>
             <div className="input-container  mb-8">

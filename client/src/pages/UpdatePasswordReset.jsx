@@ -105,7 +105,7 @@ function UpdatePasswordReset() {
     <div className="bg-primary h-screen flex justify-center">
       <div className="form bg-main flex max-w-md w-screen h-max justify-center p-8 m-auto">
         {pageStatus === "LOADED" ? <form className='text-center' onSubmit={handleUpdatePasswordReset}>
-          <img src={logo} className="mb-9 mx-auto" alt="" />
+          <img style={{ width: '279px', height: '60px' }} src={logo} className="mb-9 mx-auto" alt="" />
           <div className="title mb-8">Create a new password<br />
           </div>
           <div className="input-container  mb-8">
