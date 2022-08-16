@@ -5,10 +5,7 @@ import * as SendGrid from '@sendgrid/mail';
 @Injectable()
 export class SendGridService {
   constructor(private readonly configService: ConfigService) {
-    SendGrid.setApiKey(
-      // process.env.SENDGRID_API_KEY
-      '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',
-    );
+    SendGrid.setApiKey(process.env.SENDGRID_API_KEY);
   }
 
   async send(mail: SendGrid.MailDataRequired) {
