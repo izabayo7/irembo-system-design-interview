@@ -113,17 +113,8 @@ export class AuthService {
     const validUntil = new Date(Date.now() + 1000 * 60 * 20);
 
     const token = v4();
-    console.log(
-      process.env.fromEmail,
-      process.env.templateId,
-      process.env.SEND_GRID_KEY,
-    );
     const mail = {
-      to: await this.prismaService.user.findMany({
-        select: {
-          email: true,
-        },
-      }),
+      to: createPasswordResetDto.email,
       from: `${process.env.fromEmail}`,
       subject: 'User Account Management System - Password Reset',
       templateId: `${process.env.templateId}`,
