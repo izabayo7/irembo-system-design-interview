@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { createMock } from '@golevelup/ts-jest';
 import { PassportModule } from '@nestjs/passport';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthController } from './auth.controller';
@@ -8,6 +9,16 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 
 describe.skip('AuthController', () => {
   let Controller: AuthController;
+  let spyService: AuthService;
+
+  const mockResponseObject = () => {
+    return createMock<Response>({
+      json: jest.fn().mockReturnThis(),
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn().mockReturnThis(),
+      redirect: jest.fn().mockReturnThis(),
+    });
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

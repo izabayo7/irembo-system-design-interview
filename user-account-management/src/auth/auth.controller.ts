@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
 import { CreatePasswordResetDto } from 'src/models/user/dto/create-password-reset.dto';
 import { LoginDto } from 'src/models/user/dto/login.dto';
@@ -8,7 +8,7 @@ import { AuthService } from './auth.service';
 @Controller('auth')
 @ApiTags('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Post('login')
   @ApiBody({
@@ -43,6 +43,11 @@ export class AuthController {
   })
   createPasswordReset(@Body() createPasswordResetDto: CreatePasswordResetDto) {
     return this.authService.createPasswordReset(createPasswordResetDto);
+  }
+
+  @Get(':token')
+  getPasswordReset(@Param('token') token: string) {
+    return this.authService.findPasswordReset(token);
   }
 
   @Post('updated-password-reset')

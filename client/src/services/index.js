@@ -33,6 +33,18 @@ class AppServices {
     return axios.post(`${API_URL}/verification/${id}`);
   }
 
+  updatePasswordReset(body) {
+    return axios.post(`${API_URL}/auth/updated-password-reset`, body);
+  }
+
+  createPasswordReset(body) {
+    return axios.post(`${API_URL}/auth/create-password-reset`, body);
+  }
+
+  getPasswordReset(token) {
+    return axios.get(`${API_URL}/auth/${token}`);
+  }
+
   getUsers() {
     return axios.get(`${API_URL}/users`);
   }

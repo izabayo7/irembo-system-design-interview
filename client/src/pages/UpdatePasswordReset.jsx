@@ -10,7 +10,7 @@ import {
   loadUser,
   selectIsLoggedIn,
 } from '../store/modules/authSlice';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 function UpdatePasswordReset() {
@@ -25,6 +25,23 @@ function UpdatePasswordReset() {
   dispatch(loadUser());
   const navigate = useNavigate();
   const isLoggedIn = useSelector(selectIsLoggedIn);
+  const [pageStatus, setPageStatus] = useState("LOADING");
+  const [formData, setFormData] = useState({});
+  const { token } = useParams();
+
+  useEffect(() => {
+    AppServices.getPasswordReset(token).then(res => {
+      if (res.data.expired) {
+        setPageStatus("EXPIRED");
+      } else if (!res.data.isActive) {
+        setPageStatus("INACTIVE");
+      } else {
+        setPageStatus("LOADED");
+      }
+    }).catch(err => {
+      setPageStatus("ERROR");
+    })
+  }, [])
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -34,32 +51,41 @@ function UpdatePasswordReset() {
     }
   }, [isLoggedIn])
 
-  const onChangeEmail = (e) => {
-    SetEmail(e.target.value);
-  }
-
-  const onChangePassword = (e) => {
-    SetPassword(e.target.value);
-  }
-
   const handleUpdatePasswordReset = (e) => {
     e.preventDefault();
 
     if (submitted) return;
     setSubmitted(true);
+    const { password, confirmPassword } = formData;
+
+    if (password === "") {
+      setSubmitted(false);
+      return toast.error("Passwords is required");
+    }
+
+    if (confirmPassword === "") {
+      setSubmitted(false);
+      return toast.error("Confirm Password is required");
+    }
+
+    if (password !== confirmPassword) {
+      setSubmitted(false);
+      return toast.error("Passwords do not match");
+    }
+
 
     toast.promise(
-      AppServices.login({ email, password }),
+      AppServices.updatePasswordReset({ token, password: formData.password }),
       {
-        loading: 'Logging in ...',
+        loading: 'Resetting password ...',
         success: (response) => {
           if (response.data.token) {
             localStorage.setItem("user", JSON.stringify(response.data));
             dispatch(loadUser())
           }
-          navigate('/');
+          navigate('/login');
           setSubmitted(false);
-          return "Logged in successfully";
+          return "Password reset successful";
         },
         error: (error) => {
           const message =
@@ -74,58 +100,51 @@ function UpdatePasswordReset() {
       }
     );
   }
-  const handleRegister = (e) => {
-    e.preventDefault();
-
-    if (user.password !== user.confirmPassword)
-      return toast.error("passwords should match");
-
-    if (submitted) return;
-    setSubmitted(true);
-
-    toast.promise(
-      AppServices.register({ ...user, confirmPassword: undefined }),
-      {
-        loading: 'Registering ...',
-        success: () => {
-          setSubmitted(false);
-          return "Registered successfully";
-        },
-        error: (error) => {
-          const message =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-          setSubmitted(false);
-          if (message.includes("required pattern"))
-            if (message.includes("phone")) return "invalid phone number";
-            else return "invalid nationalId"
-          return message;
-        },
-      }
-    );
-  }
-
 
   return (
     <div className="bg-primary h-screen flex justify-center">
       <div className="form bg-main flex max-w-md w-screen h-max justify-center p-8 m-auto">
-        <form className='text-center' onSubmit={handleUpdatePasswordReset}>
+        {pageStatus === "LOADED" ? <form className='text-center' onSubmit={handleUpdatePasswordReset}>
           <img src={logo} className="mb-9 mx-auto" alt="" />
           <div className="title mb-8">Create a new password<br />
           </div>
           <div className="input-container  mb-8">
-            <input onChange={onChangePassword} className='bg' placeholder='password' type="password" name="" id="" />
+            <input onChange={(e) => { setFormData({ ...formData, password: e.target.value || "" }) }} className='bg' placeholder='password' type="password" name="" id="" />
           </div>
           <div className="input-container  mb-8">
-            <input onChange={(e) => { setUser({ ...user, password: e.target.value || "" }) }} placeholder='confirm password' type="password" id="confirmpassword" className='bg' />
+            <input onChange={(e) => { setFormData({ ...formData, confirmPassword: e.target.value || "" }) }} placeholder='confirm password' type="password" id="confirmpassword" className='bg' />
           </div>
           <div className="input-container  mb-8">
             <input className='submit bg-primary text-main cursor-pointer' type="submit" value="submit" />
           </div>
-        </form>
+        </form> :
+          pageStatus === "LOADING" ? <div className="text-center">
+            <div className="title mb-8">Loading...</div>
+          </div> :
+            pageStatus === "EXPIRED" ? <div className="text-center">
+              <div className="title mb-8">Password reset link has expired</div>
+              <div onClick={() => {
+                navigate('/login')
+              }} className="input-container  mb-8 text-primary cursor-pointer">
+                Back to login
+              </div>
+            </div> :
+              pageStatus === "INACTIVE" ? <div className="text-center">
+                <div className="title mb-8">Password reset link has been used</div>
+                <div onClick={() => {
+                  navigate('/login')
+                }} className="input-container  mb-8 text-primary cursor-pointer">
+                  Back to login
+                </div>
+              </div> :
+                <div className="text-center">
+                  <div className="title mb-8">Invalid token</div>
+                  <div onClick={() => {
+                    navigate('/login')
+                  }} className="input-container  mb-8 text-primary cursor-pointer">
+                    Back to login
+                  </div>
+                </div>}
       </div>
     </div>
   )

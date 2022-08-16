@@ -16,11 +16,7 @@ import { useDispatch, useSelector } from 'react-redux';
 function CreatePasswordReset() {
   const [email, SetEmail] = useState('')
   const [submitted, setSubmitted] = useState(false)
-  const [password, SetPassword] = useState('')
-  const [user, setUser] = useState({})
   const dispatch = useDispatch()
-
-  const childRef = useRef(null);
 
   dispatch(loadUser());
   const navigate = useNavigate();
@@ -44,48 +40,19 @@ function CreatePasswordReset() {
     if (submitted) return;
     setSubmitted(true);
 
-    toast.promise(
-      AppServices.login({ email, password }),
-      {
-        loading: 'Logging in ...',
-        success: (response) => {
-          if (response.data.token) {
-            localStorage.setItem("user", JSON.stringify(response.data));
-            dispatch(loadUser())
-          }
-          navigate('/');
-          setSubmitted(false);
-          return "Logged in successfully";
-        },
-        error: (error) => {
-          const message =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-          setSubmitted(false);
-          return message;
-        },
-      }
-    );
-  }
-  const handleRegister = (e) => {
-    e.preventDefault();
-
-    if (user.password !== user.confirmPassword)
-      return toast.error("passwords should match");
-
-    if (submitted) return;
-    setSubmitted(true);
+    if (email === '') {
+      setSubmitted(false);
+      return toast.error('Email is required');
+    }
 
     toast.promise(
-      AppServices.register({ ...user, confirmPassword: undefined }),
+      AppServices.createPasswordReset({ email }),
       {
         loading: 'Creating password reset ...',
-        success: () => {
+        success: (response) => {
+          navigate('/');
           setSubmitted(false);
-          return "Password reset successfully created";
+          return "Password reset created successfully, check your email";
         },
         error: (error) => {
           const message =
@@ -95,9 +62,6 @@ function CreatePasswordReset() {
             error.message ||
             error.toString();
           setSubmitted(false);
-          if (message.includes("required pattern"))
-            if (message.includes("phone")) return "invalid phone number";
-            else return "invalid nationalId"
           return message;
         },
       }

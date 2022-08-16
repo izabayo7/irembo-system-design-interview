@@ -72,7 +72,6 @@ export class AuthService {
         email: createPasswordResetDto.email,
       },
     });
-    console.log(userExists);
     if (!userExists)
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
@@ -80,8 +79,14 @@ export class AuthService {
       where: { userId: userExists.id },
     });
 
-    const token = v4();
+    const validUntil = new Date(Date.now() + 1000 * 60 * 20);
 
+    const token = v4();
+    console.log(
+      process.env.fromEmail,
+      process.env.templateId,
+      process.env.SEND_GRID_KEY,
+    );
     const mail = {
       to: await this.prismaService.user.findMany({
         select: {
@@ -93,8 +98,11 @@ export class AuthService {
       templateId: `${process.env.templateId}`,
       dynamicTemplateData: {
         header: 'Password Reset',
-        text: 'You requested a password reset. Please use the button below to continue the process.',
-        c2a_link: 'http://localhost:3000/reset-password/' + token,
+        text:
+          'You requested a password reset which will expire' +
+          validUntil.toLocaleString() +
+          ' (in 20 minutes). Please use the button below to continue the process.',
+        c2a_link: process.env.FRONTEND_URL + '/reset-password/' + token,
         c2a_button: 'Reset Password',
       },
     };
@@ -105,6 +113,10 @@ export class AuthService {
         where: { id: passwordReset.id },
         data: {
           token,
+          validUntil,
+        },
+        select: {
+          validUntil: true,
         },
       });
     } else {
@@ -112,8 +124,11 @@ export class AuthService {
         data: {
           userId: userExists.id,
           // create a new token for each password reset request (it will be valid for 20 minutes)
-          validUntil: new Date(Date.now() + 1000 * 60 * 20),
+          validUntil,
           token,
+        },
+        select: {
+          validUntil: true,
         },
       });
     }
@@ -150,6 +165,17 @@ export class AuthService {
         isActive: false,
       },
     });
+  }
+
+  async findPasswordReset(token: string) {
+    const passwordReset = await this.prismaService.passwordReset.findFirst({
+      where: { token },
+    });
+
+    if (!passwordReset)
+      throw new HttpException('Password reset not found', HttpStatus.NOT_FOUND);
+
+    return { ...passwordReset, expired: passwordReset.validUntil < new Date() };
   }
 
   private generateAccessToken(email: string, id: string, sub: string) {
