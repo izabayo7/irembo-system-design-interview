@@ -18,6 +18,13 @@ export class VerificationService {
         'Account Verification not found',
         HttpStatus.NOT_FOUND,
       );
+
+    if (!res.nidOrPassport)
+      throw new HttpException(
+        'Can not verify a user who have not uploaded a NID or Passport',
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+
     return await this.prismaService.accountVerification.update({
       where: {
         id,
@@ -48,5 +55,16 @@ export class VerificationService {
         verificationStatus: VerificationStatuses.PENDING_VERIFICATION,
       },
     });
+  }
+
+  async findVerification(fileName: string, userId: string) {
+    const res = await this.prismaService.accountVerification.findFirst({
+      where: {
+        officialDocument: fileName,
+        userId,
+      },
+    });
+    if (!res) throw new HttpException('Access Denied', HttpStatus.UNAUTHORIZED);
+    return true;
   }
 }

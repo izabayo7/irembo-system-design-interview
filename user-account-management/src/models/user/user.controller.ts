@@ -16,6 +16,9 @@ import {
   MaxFileSizeValidator,
   FileTypeValidator,
   Request,
+  Res,
+  StreamableFile,
+  Response,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -24,7 +27,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { FileInterceptor } from '@nestjs/platform-express/multer/interceptors';
 import { v4 } from 'uuid';
-import { writeFile } from 'fs';
+import { createReadStream, existsSync, writeFile } from 'fs';
 
 @Controller('users')
 @ApiTags('users')
@@ -147,6 +150,16 @@ export class UserController {
     return { ...req.user, password: undefined, tfaSecret: undefined };
   }
 
+  @Get('/profile/:fileName')
+  @UseGuards(JwtAuthGuard)
+  getUserProfile(@Request() req, @Response() res) {
+    const path = `${process.env.userProfilePicturesPath}/${req.params.fileName}`;
+    if (!existsSync(path)) {
+      throw new HttpException('File not found', HttpStatus.NOT_FOUND);
+    }
+    return res.sendFile(path);
+  }
+
   @Get(':id')
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
@@ -155,6 +168,56 @@ export class UserController {
   }
 
   @Put(':id')
+  @ApiBearerAuth('access-token')
+  @UseGuards(JwtAuthGuard)
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        firstName: {
+          type: 'string',
+        },
+        email: {
+          type: 'string',
+        },
+        password: {
+          type: 'string',
+        },
+        lastName: {
+          type: 'string',
+        },
+        gender: {
+          type: 'string',
+          enum: ['MALE', 'FEMALE'],
+        },
+        maritalStatus: {
+          type: 'string',
+          enum: ['SINGLE', 'MARRIED', 'DIVORCED', 'WIDOWED'],
+        },
+        role: {
+          type: 'string',
+          enum: ['USER', 'ADMIN'],
+        },
+        dateOfBirth: {
+          type: 'date',
+        },
+      },
+      required: [
+        'firstName',
+        'email',
+        'password',
+        'lastName',
+        'gender',
+        'maritalStatus',
+        'dateOfBirth',
+      ],
+    },
+  })
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return await this.userService.update(id, updateUserDto);
+  }
+
+  @Put('with-file/:id')
   @ApiBearerAuth('access-token')
   @UseInterceptors(FileInterceptor('profilePhoto'))
   @UseGuards(JwtAuthGuard)
@@ -196,6 +259,7 @@ export class UserController {
         },
       },
       required: [
+        'profilePhoto',
         'firstName',
         'email',
         'password',
@@ -206,7 +270,7 @@ export class UserController {
       ],
     },
   })
-  async update(
+  async updateWithFile(
     @Param('id') id: string,
     @UploadedFile(
       new ParseFilePipe({
@@ -221,17 +285,13 @@ export class UserController {
     file: Express.Multer.File,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    if (!file) {
-      throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
-    }
-
     let fileName: any = file.originalname.split('.');
     const extension = fileName[fileName.length - 1];
     fileName = `${v4()}.${extension}`;
     const path = `${process.env.userProfilePicturesPath}/${fileName}`;
 
     updateUserDto.profilePhoto = fileName;
-
+    // TODO delete existing profile
     const response = await this.userService.update(id, updateUserDto);
 
     writeFile(path, file.buffer, async (err) => {
@@ -242,6 +302,7 @@ export class UserController {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
+      return response;
     });
   }
 

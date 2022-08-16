@@ -47,15 +47,14 @@ model AccountVerification {
 }
 
 model PasswordReset {
-  id                 String               @id @default(cuid())
-  userId             String               @unique
-  user               User                 @relation(fields: [userId], references: [id])
-  token              String
-  isActive           Boolean              @default(true)
-  validUntil         DateTime
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  verificationStatus VerificationStatuses @default(UNVERIFIED)
+  id         String   @id @default(cuid())
+  userId     String   @unique
+  user       User     @relation(fields: [userId], references: [id])
+  token      String
+  isActive   Boolean  @default(true)
+  validUntil DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt    
 }
 
 model RefreshToken {

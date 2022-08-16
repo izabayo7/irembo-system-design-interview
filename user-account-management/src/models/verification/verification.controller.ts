@@ -16,6 +16,7 @@ import {
   HttpStatus,
   Put,
   Request,
+  Response,
 } from '@nestjs/common';
 import { VerificationService } from './verification.service';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
@@ -23,7 +24,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { CreateVerificaitonDto } from './dto/create-verification.dto';
 import { v4 } from 'uuid';
-import { writeFile } from 'fs';
+import { createReadStream, existsSync, writeFile } from 'fs';
 import { Roles } from '@prisma/client';
 
 // TODO add handle for when user verification is rejected
@@ -74,7 +75,7 @@ export class VerificationController {
     let fileName: any = file.originalname.split('.');
     const extension = fileName[fileName.length - 1];
     fileName = `${v4()}.${extension}`;
-    const path = `${process.env.userProfilePicturesPath}/${fileName}`;
+    const path = `${process.env.userVerificationFilesPath}/${fileName}`;
 
     createVerificationDto.officialDocument = fileName;
 
@@ -94,6 +95,7 @@ export class VerificationController {
           HttpStatus.INTERNAL_SERVER_ERROR,
         );
       }
+      return response;
     });
 
     return response;
@@ -107,5 +109,22 @@ export class VerificationController {
       throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
 
     return this.verificationService.verifyAccount(id);
+  }
+
+  @Get('/document/:fileName')
+  @UseGuards(JwtAuthGuard)
+  async getUserProfile(@Request() req, @Response() res) {
+    if (req.user.role !== Roles.ADMIN)
+      await this.verificationService.findVerification(
+        req.params.fileName,
+        req.user.id,
+      );
+
+    const path = `${process.env.userVerificationFilesPath}/${req.params.fileName}`;
+    if (!existsSync(path)) {
+      throw new HttpException('File not found', HttpStatus.NOT_FOUND);
+    }
+
+    res.sendFile(path);
   }
 }

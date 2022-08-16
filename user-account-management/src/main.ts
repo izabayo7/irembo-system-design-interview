@@ -7,7 +7,7 @@ import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   // TODO verify that the storage environment variables are set
   const app = await NestFactory.create(AppModule, { cors: true });
-  app.use(helmet());
+  app.use(helmet({ crossOriginResourcePolicy: false }));
 
   app.useGlobalPipes(new ValidationPipe());
 

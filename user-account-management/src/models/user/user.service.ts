@@ -111,6 +111,7 @@ export class UserService {
       },
       data: {
         ...updateUserDto,
+        dateOfBirth: new Date(updateUserDto.dateOfBirth).toISOString(),
       },
     });
   }
@@ -135,14 +136,14 @@ export class UserService {
         },
       });
 
-    if (user.PasswordReset)
+    if (user.RefreshToken)
       await this.prismaService.refreshToken.delete({
         where: {
           userId: id,
         },
       });
 
-    if (user.RefreshToken)
+    if (user.PasswordReset)
       await this.prismaService.passwordReset.delete({
         where: {
           userId: id,

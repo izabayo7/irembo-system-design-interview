@@ -21,7 +21,8 @@ export class AuthService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
-  ) {}
+    private readonly emailService: SendGridService,
+  ) { }
 
   async login(loginDto: LoginDto) {
     const { email, password } = loginDto;
@@ -71,19 +72,39 @@ export class AuthService {
         email: createPasswordResetDto.email,
       },
     });
-
+    console.log(userExists);
     if (!userExists)
       throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 
     const passwordReset = await this.prismaService.passwordReset.findUnique({
       where: { userId: userExists.id },
     });
-    // TODO send email for password reset
+
+    const token = v4();
+
+    const mail = {
+      to: await this.prismaService.user.findMany({
+        select: {
+          email: true,
+        },
+      }),
+      from: `${process.env.fromEmail}`,
+      subject: 'User Account Management System - Password Reset',
+      templateId: `${process.env.templateId}`,
+      dynamicTemplateData: {
+        header: 'Password Reset',
+        text: 'You requested a password reset. Please use the button below to continue the process.',
+        c2a_link: 'http://localhost:3000/reset-password/' + token,
+        c2a_button: 'Reset Password',
+      },
+    };
+    await this.emailService.send(mail);
+
     if (passwordReset) {
       return await this.prismaService.passwordReset.update({
         where: { id: passwordReset.id },
         data: {
-          token: v4(),
+          token,
         },
       });
     } else {
@@ -92,7 +113,7 @@ export class AuthService {
           userId: userExists.id,
           // create a new token for each password reset request (it will be valid for 20 minutes)
           validUntil: new Date(Date.now() + 1000 * 60 * 20),
-          token: v4(),
+          token,
         },
       });
     }
