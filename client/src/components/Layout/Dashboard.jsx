@@ -49,21 +49,7 @@ const DashboardLayout = ({ children }) => {
     } else if (!user) {
       navigate('/login');
     }
-  }, [loaded])
-
-
-  const [email, setEmail] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [password, setPassword] = useState('')
-
-  useEffect(() => {
-    if (user) {
-      setEmail(user.email)
-      setFirstName(user.firstName)
-      setLastName(user.lastName)
-    }
-  }, [user])
+  }, [loaded]);
 
 
   useEffect(() => {

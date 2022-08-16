@@ -32,6 +32,8 @@ export const loadUser = createAsyncThunk(
         localStorage.removeItem('user');
       })
 
+    } else {
+      throw new Error("No token found");
     }
   }
 );
@@ -57,7 +59,7 @@ export const AuthSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(loadUser.pending, (state) => {
-        state.user = {};
+        state.user = null;
       })
       .addCase(loadUser.fulfilled, (state, action) => {
         state.user = {
@@ -66,7 +68,7 @@ export const AuthSlice = createSlice({
         if (action.payload) state.isLoggedIn = true;
       })
       .addCase(loadUser.rejected, (state) => {
-        state.user = {};
+        state.user = null;
       });
   },
 });
