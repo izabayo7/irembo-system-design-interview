@@ -3,26 +3,26 @@ FROM node:lts-alpine As development
 WORKDIR /usr/src/app
 
 COPY package*.json ./
+COPY prisma ./prisma/
 
-RUN npm install --only=development
+RUN npm install
 
 COPY . .
+
+RUN npm run prisma:generate
 
 RUN npm run build
 
 FROM node:lts-alpine as production
 
-ARG NODE_ENV=production
-ENV NODE_ENV=${NODE_ENV}
+ARG FILE_UPLOAD_PATH
 
-WORKDIR /usr/src/app
+ENV FILE_UPLOAD_PATH=$FILE_UPLOAD_PATH
 
-COPY package*.json ./
-
-RUN npm install --only=production
-
-COPY . .
-
+COPY --from=development /usr/src/app/node_modules ./node_modules
+COPY --from=development /usr/src/app/package*.json ./
 COPY --from=development /usr/src/app/dist ./dist
+COPY --from=development /usr/src/app/prisma ./prisma
+RUN mkdir -p FILE_UPLOAD_PATH
 
-CMD ["node", "dist/main"]
+CMD [  "npm", "run", "start:migrate:prod" ]

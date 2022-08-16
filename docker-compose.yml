@@ -3,42 +3,43 @@ version: '3'
 services:
   frontend:
     image: izabayo7/user-account-mis:latest
-    build: ./client/
+    build:
+      context: ./client/
+      args:
+        - VITE_API_URL=$VITE_API_URL
     ports:
       - 3000:3000
+    restart: always
     depends_on:
       - backend
-    environment:
-      - VITE_API_URL=http://backend:3000
+    env_file:
+      - .env
 
   backend:
     image: izabayo7/user-account-mis-api:latest
-    build: ./user-account-management/
+    build:
+      context: ./user-account-management/
+      args:
+        - FILE_UPLOAD_PATH=$FILE_UPLOAD_PATH
     ports:
       - 5000:3000
+    restart: always
     depends_on:
       - db
-    environment:
-      - DATABASE_URL=postgres://postgres:irembo@2020@db:5432/userAccountMis
-      - JWT_SECRET=P538uCvyBN400eJkywSywA#NKWOuf0EQMHVttDf54kWmLRA8$t
-      - userProfilePicturesPath=/opt/testing/profiles
-      - userVerificationFilesPath=/opt/testing/verificationFiles
-      - userVerificationFilesPath=/opt/testing/verificationFiles
-      - templateId=
-      - SEND_GRID_KEY=
-      - fromEmail=
-      - FRONTEND_URL=http://frontend:3000
+    env_file:
+      - .env
+    volumes:
+      - backend:${FILE_UPLOAD_PATH}
   db:
     image: izabayo7/user-account-mis-db:latest
     build: ./deploy/db/
     ports:
       - 5432:5432
     restart: always
-    environment:
-      POSTGRES_PASSWORD: irembo@2020
-      POSTGRES_DB: userAccountMis
+    env_file:
+      - .env
     volumes:
-      - './data:/var/lib/postgresql/data '
+      - postgres:/var/lib/postgresql/data
 
   nginx:
     image: izabayo7/user-account-mis-nginx:latest
@@ -49,40 +50,10 @@ services:
       - 80:80
     depends_on:
       - frontend
-  # dev:
-  #   container_name: backend_api_dev
-  #   image: backend-api-dev:1.0.0
-  #   build:
-  #     context: ./user-account-management
-  #     target: development
-  #     dockerfile: Dockerfile
-  #   command: npm run start:debug
-  #   ports:
-  #     - 3000:3000
-  #     - 9229:9229
-  #   networks:
-  #     - nesjs-network
-  #   volumes:
-  #     - .:/usr/src/app
-  #     - /usr/src/app/node_modules
-  #   restart: unless-stopped
-  # prod:
-  #   container_name: backend_api_prod
-  #   image: backend-api-prod:1.0.0
-  #   build:
-  #     context: ./user-account-management
-  #     target: production
-  #     dockerfile: Dockerfile
-  #   command: npm run start:prod
-  #   ports:
-  #     - 3000:3000
-  #     - 9229:9229
-  #   networks:
-  #     - nesjs-network
-  #   volumes:
-  #     - .:/usr/src/app
-  #     - /usr/src/app/node_modules
-  #   restart: unless-stopped
+      - backend
 
-networks:
-  nesjs-network:
+volumes:
+  postgres:
+    name: nest-prisma-docker-db
+  backend:
+    name: nest-docker-storage-backend
