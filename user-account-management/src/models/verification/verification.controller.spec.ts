@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SendGridService } from '../../common/services/sendgrid.service';
-import { PrismaService } from '../../database/services/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { VerificationController } from './verification.controller';
 import { VerificationService } from './verification.service';
 

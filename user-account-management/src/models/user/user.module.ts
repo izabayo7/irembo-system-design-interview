@@ -3,7 +3,7 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../../database/services/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { SendGridService } from '../../common/services/sendgrid.service';
 
 @Module({

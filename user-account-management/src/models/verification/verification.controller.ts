@@ -75,7 +75,7 @@ export class VerificationController {
     let fileName: any = file.originalname.split('.');
     const extension = fileName[fileName.length - 1];
     fileName = `${v4()}.${extension}`;
-    const path = `${process.env.userVerificationFilesPath}/${fileName}`;
+    const path = `${process.env.FILE_UPLOAD_PATH}/${fileName}`;
 
     createVerificationDto.officialDocument = fileName;
 
@@ -120,7 +120,7 @@ export class VerificationController {
         req.user.id,
       );
 
-    const path = `${process.env.userVerificationFilesPath}/${req.params.fileName}`;
+    const path = `${process.env.FILE_UPLOAD_PATH}/${req.params.fileName}`;
     if (!existsSync(path)) {
       throw new HttpException('File not found', HttpStatus.NOT_FOUND);
     }

@@ -23,7 +23,8 @@ function Login() {
   const [user, setUser] = useState({
     gender: "MALE",
     maritalStatus: "SINGLE",
-    role: "USER"
+    role: "USER",
+    nationality: "RWANDAN"
   })
   const dispatch = useDispatch()
 
@@ -64,6 +65,16 @@ function Login() {
 
     if (submitted) return;
     setSubmitted(true);
+
+    if (email === "") {
+      setSubmitted(false);
+      return toast.error("Email is required");
+    }
+
+    if (password === "") {
+      setSubmitted(false);
+      return toast.error("Passwords is required");
+    }
 
     if (pageStatus === "2FA" && twofactorAuthCode === "") {
       setSubmitted(false);
@@ -157,7 +168,7 @@ function Login() {
           <div className="title mb-8">Welcome to <br />
             <div className="small">User Account Management System</div></div>
           <div className="input-container  mb-8">
-            <input onChange={onChangeEmail} className='bg' placeholder="email" type="text" name="" id="" />
+            <input onChange={onChangeEmail} className='bg' placeholder="email" type="email" name="" id="" />
           </div>
           <div className="input-container  mb-8">
             <input onChange={onChangePassword} className='bg' placeholder='password' type="password" name="" id="" />
@@ -185,6 +196,7 @@ function Login() {
               <input className='submit bg-primary text-main cursor-pointer' type="submit" value="send" />
             </div>
             <div onClick={() => {
+              SetTwofactorAuthCode("");
               setPageStatus("LOGIN")
             }} className="input-container  mb-8 text-primary cursor-pointer">
               Back
@@ -235,8 +247,8 @@ function Login() {
                     </div>
 
                     <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="nationality" className="block text-sm font-medium text-gray-700">Marital status</label>
-                      <select onChange={(e) => { setUser({ ...user, nationality: e.target.value || "" }) }} id="nationality" className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                      <label htmlFor="nationality" className="block text-sm font-medium text-gray-700">Nationality</label>
+                      <select defaultValue={user.nationality} onChange={(e) => { setUser({ ...user, nationality: e.target.value || "" }) }} id="nationality" className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                         <option value="AFGHAN">Afghan</option>
                         <option value="ALBANIAN">Albanian</option>
                         <option value="ALGERIAN">Algerian</option>
@@ -382,7 +394,7 @@ function Login() {
                         <option value="QATARI">Qatari</option>
                         <option value="ROMANIAN">Romanian</option>
                         <option value="RUSSIAN">Russian</option>
-                        <option value="RWANDAN">Rwandan</option>
+                        <option selected value="RWANDAN">Rwandan</option>
                         <option value="SAINT_LUCIAN">Saint Lucian</option>
                         <option value="SALVADORAN">Salvadoran</option>
                         <option value="SAMOAN">Samoan</option>

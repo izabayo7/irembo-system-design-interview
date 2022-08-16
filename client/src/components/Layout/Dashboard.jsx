@@ -227,7 +227,7 @@ const DashboardLayout = ({ children }) => {
                     </div>
 
                     <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor="nationality" className="block text-sm font-medium text-gray-700">Marital status</label>
+                      <label htmlFor="nationality" className="block text-sm font-medium text-gray-700">Nationality</label>
                       <select defaultValue={user?.nationality} onChange={(e) => { setLoggedInUser({ ...user, nationality: e.target.value || "" }) }} id="nationality" className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
                         <option value="AFGHAN">Afghan</option>
                         <option value="ALBANIAN">Albanian</option>
@@ -374,7 +374,7 @@ const DashboardLayout = ({ children }) => {
                         <option value="QATARI">Qatari</option>
                         <option value="ROMANIAN">Romanian</option>
                         <option value="RUSSIAN">Russian</option>
-                        <option value="RWANDAN">Rwandan</option>
+                        <option selected value="RWANDAN">Rwandan</option>
                         <option value="SAINT_LUCIAN">Saint Lucian</option>
                         <option value="SALVADORAN">Salvadoran</option>
                         <option value="SAMOAN">Samoan</option>

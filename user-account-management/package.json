@@ -13,10 +13,11 @@
     "start:dev": "dotenv -e .env.development -- nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
+    "start:migrate:prod": "prisma migrate deploy && npm run start:prod",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "test": "jest --setupFiles dotenv/config",
+    "test": "jest --runInBand --setupFiles dotenv/config",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
+    "test:cov": "jest --setupFiles dotenv/config --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "migrate:dev": "dotenv -e .env.development -- npx prisma migrate dev --name init",
@@ -24,6 +25,7 @@
     "migrate:deploy": "prisma migrate deploy --preview-feature",
     "reset:dev": "dotenv -e .env.development -- npx prisma migrate reset",
     "reset:test": "dotenv -e .env.test -- npx prisma migrate reset",
+    "prisma:generate": "npx prisma generate",
     "studio:test": "dotenv -e .env.test -- npx prisma studio",
     "studio:dev": "dotenv -e .env.development -- npx prisma studio"
   },
@@ -38,7 +40,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/swagger": "^6.0.5",
     "@nestjs/throttler": "^3.0.0",
-    "@prisma/client": "^4.2.1",
+    "@prisma/client": "~3.4.1",
     "@sendgrid/mail": "^7.7.0",
     "bcryptjs": "^2.4.3",
     "class-validator": "^0.13.2",
@@ -93,9 +95,5 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  },
-  "prisma": {
-    "schema": "src/database/schema.prisma",
-    "output": "src/database/ERD.svg"
   }
 }

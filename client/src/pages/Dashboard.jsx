@@ -3,7 +3,7 @@ import "../assets/scss/dashboard.scss";
 import "../assets/scss/modal.scss";
 import verified from '../assets/images/verified.svg'
 import AccountView from "../components/AccountView";
-import { selectUser, selectIsLoggedIn } from "../store/modules/authSlice";
+import { selectUser, selectIsLoggedIn, setUser } from "../store/modules/authSlice";
 import AppServices from "../services";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
@@ -100,9 +100,10 @@ function Dashboard() {
       AppServices.uploadIdentificationDocuments(formData, user.accountVerification.id),
       {
         loading: 'Submitting ...',
-        success: () => {
+        success: ({ data }) => {
           toggleModal();
           setSubmitted(false);
+          setUser({ ...user, accountVerification: data })
           // set user with new stuff
           return "Submitted successfully";
         },

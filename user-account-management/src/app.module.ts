@@ -6,9 +6,11 @@ import { APP_GUARD } from '@nestjs/core';
 import { UserModule } from './models/user/user.module';
 import { VerificationModule } from './models/verification/verification.module';
 import { AuthModule } from './auth/auth.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
+    PrismaModule,
     AuthModule,
     UserModule,
     VerificationModule,
@@ -26,4 +28,4 @@ import { AuthModule } from './auth/auth.module';
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

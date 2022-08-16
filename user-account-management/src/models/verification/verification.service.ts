@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { VerificationStatuses } from '@prisma/client';
 import { SendGridService } from '../../common/services/sendgrid.service';
-import { PrismaService } from '../../database/services/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CreateVerificaitonDto } from './dto/create-verification.dto';
 
 @Injectable()

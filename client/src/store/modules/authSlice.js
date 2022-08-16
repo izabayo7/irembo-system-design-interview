@@ -24,15 +24,14 @@ export const loadUser = createAsyncThunk(
         "Authorization"
       ] = `Bearer ${bearer?.accessToken}`;
 
-      let {
+      return AppServices.getCurrentUser().then(({
         data
-      } = await AppServices.getCurrentUser();
-
-      if (!data.id) {
+      }) => {
+        return data;
+      }).catch((e) => {
         localStorage.removeItem('user');
-      }
+      })
 
-      return data;
     }
   }
 );
@@ -61,7 +60,9 @@ export const AuthSlice = createSlice({
         state.user = {};
       })
       .addCase(loadUser.fulfilled, (state, action) => {
-        state.user = action.payload;
+        state.user = {
+          ...action.payload
+        };
         if (action.payload) state.isLoggedIn = true;
       })
       .addCase(loadUser.rejected, (state) => {

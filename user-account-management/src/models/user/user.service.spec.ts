@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { SendGridService } from '../../common/services/sendgrid.service';
-import { PrismaService } from '../../database/services/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { UserService } from './user.service';
 
 describe('UserService', () => {

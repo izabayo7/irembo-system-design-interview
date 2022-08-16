@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { SendGridService } from '../common/services/sendgrid.service';
-import { PrismaService } from '../database/services/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreatePasswordResetDto } from '../models/user/dto/create-password-reset.dto';
 import { LoginDto } from '../models/user/dto/login.dto';
 import { UpdatePasswordResetDto } from '../models/user/dto/update-password-reset.dto';
@@ -37,7 +37,7 @@ export class AuthService {
     }
 
     if (user.tfaEnabled) {
-      if (!user.tfaSecret) {
+      if (!user.tfaSecret || !twofactorAuthCode) {
         const secret = Math.floor(100000 + Math.random() * 900000);
 
         const mail = {
@@ -238,22 +238,5 @@ export class AuthService {
         token: refreshToken,
       },
     });
-  }
-
-  // Public methods
-  public async verifyRefreshToken(token: string) {
-    try {
-      const decoded = this.jwtService.verify(token, {
-        secret: process.env.JWT_REFRESH_SECRET,
-      });
-
-      const user = await this.prismaService.user.findUnique({
-        where: { email: decoded.email },
-      });
-
-      return user;
-    } catch (error) {
-      throw new HttpException('Invalid refresh token', 400);
-    }
   }
 }

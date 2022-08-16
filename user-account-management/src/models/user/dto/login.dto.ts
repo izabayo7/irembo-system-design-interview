@@ -23,5 +23,5 @@ export class LoginDto {
   })
   readonly password: string;
 
-  readonly twofactorAuthCode: string;
+  readonly twofactorAuthCode?: string;
 }

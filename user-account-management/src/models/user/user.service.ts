@@ -3,7 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Roles } from '@prisma/client';
-import { PrismaService } from '../../database/services/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { SendGridService } from '../../common/services/sendgrid.service';
 import { hash } from '../../utils/password';
 
@@ -154,22 +154,5 @@ export class UserService {
         id,
       },
     });
-  }
-
-  /**
-   * @private send email helper
-   * @param email password
-   *
-   */
-  async sendConfirmPasswordEmail({ email }: { email: string }) {
-    const mail = {
-      to: email,
-      from: 'cedricizabayo7@gmail.com',
-      templateId: 'd-157bf0d2f4834e3b921ded871f8b24f9',
-      dynamicTemplateData: {
-        email,
-      },
-    };
-    return await this.sendgridService.send(mail);
   }
 }

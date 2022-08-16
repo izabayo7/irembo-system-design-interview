@@ -28,21 +28,12 @@ import { FileInterceptor } from '@nestjs/platform-express/multer/interceptors';
 import { v4 } from 'uuid';
 import { existsSync, writeFile } from 'fs';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { Roles } from '@prisma/client';
 
 @Controller('users')
 @ApiTags('users')
 export class UserController {
   constructor(private readonly userService: UserService) { }
-
-  //   user
-
-  // - signup
-  // - signin
-  // - reset password
-
-  // - update account protected
-  // - delete account protected
-  // - view accounts protected
 
   @Post()
   @UseInterceptors(FileInterceptor('profilePhoto'))
@@ -116,10 +107,17 @@ export class UserController {
       throw new HttpException('No file uploaded', HttpStatus.BAD_REQUEST);
     }
 
+    if (new Date(createUserDto.dateOfBirth).getTime() > new Date().getTime()) {
+      throw new HttpException(
+        'Date of birth should be in the past',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
     let fileName: any = file.originalname.split('.');
     const extension = fileName[fileName.length - 1];
     fileName = `${v4()}.${extension}`;
-    const path = `${process.env.userProfilePicturesPath}/${fileName}`;
+    const path = `${process.env.FILE_UPLOAD_PATH}/${fileName}`;
 
     createUserDto.profilePhoto = fileName;
 
@@ -142,7 +140,10 @@ export class UserController {
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
   @ApiConsumes('multipart/form-data')
-  findAll() {
+  findAll(@Request() req) {
+    if (req.user.role !== Roles.ADMIN)
+      throw new HttpException('Access denied', HttpStatus.UNAUTHORIZED);
+
     return this.userService.findAll();
   }
 
@@ -156,7 +157,7 @@ export class UserController {
   @Get('/profile/:fileName')
   @UseGuards(JwtAuthGuard)
   getUserProfile(@Request() req, @Response() res) {
-    const path = `${process.env.userProfilePicturesPath}/${req.params.fileName}`;
+    const path = `${process.env.FILE_UPLOAD_PATH}/${req.params.fileName}`;
     if (!existsSync(path)) {
       throw new HttpException('File not found', HttpStatus.NOT_FOUND);
     }
@@ -220,6 +221,12 @@ export class UserController {
     },
   })
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    if (new Date(updateUserDto.dateOfBirth).getTime() > new Date().getTime()) {
+      throw new HttpException(
+        'Date of birth should be in the past',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     return await this.userService.update(id, updateUserDto);
   }
 
@@ -298,7 +305,7 @@ export class UserController {
     let fileName: any = file.originalname.split('.');
     const extension = fileName[fileName.length - 1];
     fileName = `${v4()}.${extension}`;
-    const path = `${process.env.userProfilePicturesPath}/${fileName}`;
+    const path = `${process.env.FILE_UPLOAD_PATH}/${fileName}`;
 
     updateUserDto.profilePhoto = fileName;
     // TODO delete existing profile
@@ -320,7 +327,10 @@ export class UserController {
   @Delete(':id')
   @ApiBearerAuth('access-token')
   @UseGuards(JwtAuthGuard)
-  remove(@Param('id') id: string) {
+  remove(@Param('id') id: string, @Request() req) {
+    if (req.user.role !== Roles.ADMIN && req.user.id !== req.params.id)
+      throw new HttpException('Access denied', HttpStatus.UNAUTHORIZED);
+
     return this.userService.remove(id);
   }
 }

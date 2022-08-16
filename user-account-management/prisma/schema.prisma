@@ -6,9 +6,9 @@ generator client {
 }
 
 // Generate ERD
-generator erd {
-  provider = "prisma-erd-generator"
-}
+// generator erd {
+//   provider = "prisma-erd-generator"
+// }
 
 datasource db {
   provider = "postgresql"
