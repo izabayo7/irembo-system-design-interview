@@ -7,8 +7,8 @@ import { CreateVerificaitonDto } from './dto/create-verification.dto';
 @Injectable()
 export class VerificationService {
   constructor(
-    private readonly emailService: SendGridService,
     private readonly prismaService: PrismaService,
+    private readonly emailService: SendGridService,
   ) { }
 
   async verifyAccount(id: string) {
