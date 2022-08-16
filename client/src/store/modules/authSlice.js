@@ -2,12 +2,8 @@ import {
   createSlice,
   createAsyncThunk
 } from "@reduxjs/toolkit";
-import jwt from "jwt-decode";
 import axios from "axios";
 import AppServices from "../../services";
-import {
-  useDispatch
-} from "react-redux";
 
 const initialState = {
   user: null,
@@ -69,6 +65,7 @@ export const AuthSlice = createSlice({
       })
       .addCase(loadUser.rejected, (state) => {
         state.user = null;
+        state.isLoggedIn = 0;
       });
   },
 });

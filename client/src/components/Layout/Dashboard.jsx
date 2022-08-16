@@ -6,7 +6,7 @@ import home from '../../assets/images/blued-home-icon.svg'
 import '../../assets/scss/dashboardLayout.scss'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
-import { selectUser, logout, loadUser } from '../../store/modules/authSlice'
+import { selectUser, logout, loadUser, selectIsLoggedIn } from '../../store/modules/authSlice'
 import Modal from '../Modal';
 import toast from 'react-hot-toast';
 import AppServices from "../../services";
@@ -34,6 +34,7 @@ const DashboardLayout = ({ children }) => {
   }
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
+  const isLoggedIn = useSelector(selectIsLoggedIn);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -41,17 +42,21 @@ const DashboardLayout = ({ children }) => {
     navigate('/login');
   }
 
+  useEffect(() => {
+    if (isLoggedIn === 0) {
+      navigate('/login');
+    }
+  }, [isLoggedIn])
 
   useEffect(() => {
     if (!loaded) {
       dispatch(loadUser());
-    } else if (!user) {
-      navigate('/login');
     }
   }, [loaded]);
 
   useEffect(() => {
-    setLoaded(true);
+    if (user)
+      setLoaded(true);
   }, [user]);
 
 

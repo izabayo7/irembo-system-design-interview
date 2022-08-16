@@ -48,6 +48,12 @@ function Login() {
     }
   }, [isLoggedIn])
 
+  useEffect(() => {
+    if (pageStatus === "2FA") {
+      document.getElementById("code").value = "";
+    }
+  }, [pageStatus])
+
   const onChangeEmail = (e) => {
     SetEmail(e.target.value);
   }
@@ -168,10 +174,10 @@ function Login() {
           <div className="title mb-8">Welcome to <br />
             <div className="small">User Account Management System</div></div>
           <div className="input-container  mb-8">
-            <input onChange={onChangeEmail} className='bg' placeholder="email" type="email" name="" id="" />
+            <input onChange={onChangeEmail} className='bg' placeholder="email" type="email" id="email" />
           </div>
           <div className="input-container  mb-8">
-            <input onChange={onChangePassword} className='bg' placeholder='password' type="password" name="" id="" />
+            <input onChange={onChangePassword} className='bg' placeholder='password' type="password" id="password" />
           </div>
           <div className="input-container  mb-8">
             <input className='submit bg-primary text-main cursor-pointer' type="submit" value="submit" />
@@ -190,7 +196,7 @@ function Login() {
             <div className="title mb-8">Enter the 6 digit code <br />
               <div className="small"> which was sent to your email.</div></div>
             <div className="input-container  mb-8">
-              <input onChange={onChange2FA} className='bg' placeholder="code" type="text" name="code" id="code" />
+              <input defaultValue={''} onChange={onChange2FA} className='bg' placeholder="code" type="text" id="code" />
             </div>
             <div className="input-container  mb-8">
               <input className='submit bg-primary text-main cursor-pointer' type="submit" value="send" />
