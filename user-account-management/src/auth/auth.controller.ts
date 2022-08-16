@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { ApiBody, ApiTags } from '@nestjs/swagger';
-import { CreatePasswordResetDto } from 'src/models/user/dto/create-password-reset.dto';
-import { LoginDto } from 'src/models/user/dto/login.dto';
-import { UpdatePasswordResetDto } from 'src/models/user/dto/update-password-reset.dto';
+import { CreatePasswordResetDto } from '../models/user/dto/create-password-reset.dto';
+import { LoginDto } from '../models/user/dto/login.dto';
+import { UpdatePasswordResetDto } from '../models/user/dto/update-password-reset.dto';
 import { AuthService } from './auth.service';
 
 @Controller('auth')

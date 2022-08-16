@@ -9,16 +9,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 
 describe.skip('AuthController', () => {
   let Controller: AuthController;
-  let spyService: AuthService;
-
-  const mockResponseObject = () => {
-    return createMock<Response>({
-      json: jest.fn().mockReturnThis(),
-      status: jest.fn().mockReturnThis(),
-      send: jest.fn().mockReturnThis(),
-      redirect: jest.fn().mockReturnThis(),
-    });
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

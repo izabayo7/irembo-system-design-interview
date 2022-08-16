@@ -21,10 +21,10 @@ import {
 import { VerificationService } from './verification.service';
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { CreateVerificaitonDto } from './dto/create-verification.dto';
 import { v4 } from 'uuid';
-import { createReadStream, existsSync, writeFile } from 'fs';
+import { existsSync, writeFile } from 'fs';
 import { Roles } from '@prisma/client';
 
 // TODO add handle for when user verification is rejected

@@ -1,4 +1,7 @@
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { SendGridService } from '../../common/services/sendgrid.service';
+import { PrismaService } from '../../database/services/prisma.service';
 import { VerificationService } from './verification.service';
 
 describe('VerificationService', () => {
@@ -6,7 +9,12 @@ describe('VerificationService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [VerificationService],
+      providers: [
+        VerificationService,
+        SendGridService,
+        PrismaService,
+        ConfigService,
+      ],
     }).compile();
 
     service = module.get<VerificationService>(VerificationService);

@@ -3,17 +3,14 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
-  NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ResponseStatus } from 'src/common/enums/responseStatus.enum';
-import { SendGridService } from 'src/common/services/sendgrid.service';
-import { PrismaService } from 'src/database/services/prisma.service';
-import { CreatePasswordResetDto } from 'src/models/user/dto/create-password-reset.dto';
-import { LoginDto } from 'src/models/user/dto/login.dto';
-import { UpdatePasswordResetDto } from 'src/models/user/dto/update-password-reset.dto';
-import { compare, hash } from 'src/utils/password';
+import { SendGridService } from '../common/services/sendgrid.service';
+import { PrismaService } from '../database/services/prisma.service';
+import { CreatePasswordResetDto } from '../models/user/dto/create-password-reset.dto';
+import { LoginDto } from '../models/user/dto/login.dto';
+import { UpdatePasswordResetDto } from '../models/user/dto/update-password-reset.dto';
+import { compare, hash } from '../utils/password';
 import { v4 } from 'uuid';
 
 @Injectable()

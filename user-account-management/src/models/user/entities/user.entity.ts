@@ -1,5 +1,4 @@
 import { Genders, MaritalStatuses, Roles } from '@prisma/client';
-import { Verification } from 'src/models/verification/entities/verification.entity';
 
 export class User {
   readonly id: string;
@@ -16,5 +15,4 @@ export class User {
   readonly updatedAt: Date;
   readonly maritalStatus: MaritalStatuses;
   readonly role: Roles;
-  readonly accountVerification: Verification;
 }

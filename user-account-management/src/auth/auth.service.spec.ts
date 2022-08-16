@@ -21,12 +21,7 @@ describe.skip('AuthService', () => {
           },
         }),
       ],
-      providers: [
-        AuthController,
-        AuthService,
-        JwtStrategy,
-        ConfigService,
-      ],
+      providers: [AuthController, AuthService, JwtStrategy, ConfigService],
     }).compile();
 
     service = module.get<AuthService>(AuthService);

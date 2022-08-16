@@ -1,12 +1,11 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ResponseStatus } from 'src/common/enums/responseStatus.enum';
-import { SendGridService } from 'src/common/services/sendgrid.service';
-import { PrismaService } from 'src/database/services/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { hash } from 'src/utils/password';
 import { JwtService } from '@nestjs/jwt';
 import { Roles } from '@prisma/client';
+import { PrismaService } from '../../database/services/prisma.service';
+import { SendGridService } from '../../common/services/sendgrid.service';
+import { hash } from '../../utils/password';
 
 @Injectable()
 export class UserService {
