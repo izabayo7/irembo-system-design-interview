@@ -8,6 +8,9 @@ services:
       - 3000:3000
     depends_on:
       - backend
+    environment:
+      - VITE_API_URL=http://backend:3000
+
   backend:
     image: izabayo7/user-account-mis-api:latest
     build: ./user-account-management/
@@ -15,6 +18,16 @@ services:
       - 5000:3000
     depends_on:
       - db
+    environment:
+      - DATABASE_URL=postgres://postgres:irembo@2020@db:5432/userAccountMis
+      - JWT_SECRET=P538uCvyBN400eJkywSywA#NKWOuf0EQMHVttDf54kWmLRA8$t
+      - userProfilePicturesPath=/opt/testing/profiles
+      - userVerificationFilesPath=/opt/testing/verificationFiles
+      - userVerificationFilesPath=/opt/testing/verificationFiles
+      - templateId=
+      - SEND_GRID_KEY=
+      - fromEmail=
+      - FRONTEND_URL=http://frontend:3000
   db:
     image: izabayo7/user-account-mis-db:latest
     build: ./deploy/db/
