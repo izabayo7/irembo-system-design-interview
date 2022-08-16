@@ -15,9 +15,11 @@ import { useDispatch, useSelector } from 'react-redux';
 
 function Login() {
   const [email, SetEmail] = useState('')
+  const [twofactorAuthCode, SetTwofactorAuthCode] = useState('')
   const [submitted, setSubmitted] = useState(false)
   const [password, SetPassword] = useState('')
   const [file, setFile] = useState(null)
+  const [pageStatus, setPageStatus] = useState("LOGIN");
   const [user, setUser] = useState({
     gender: "MALE",
     maritalStatus: "SINGLE",
@@ -49,6 +51,10 @@ function Login() {
     SetEmail(e.target.value);
   }
 
+  const onChange2FA = (e) => {
+    SetTwofactorAuthCode(e.target.value);
+  }
+
   const onChangePassword = (e) => {
     SetPassword(e.target.value);
   }
@@ -59,11 +65,21 @@ function Login() {
     if (submitted) return;
     setSubmitted(true);
 
+    if (pageStatus === "2FA" && twofactorAuthCode === "") {
+      setSubmitted(false);
+      return toast.error("twofactorAuthCode is required");
+    }
+
     toast.promise(
-      AppServices.login({ email, password }),
+      AppServices.login({ email, password, twofactorAuthCode }),
       {
         loading: 'Logging in ...',
         success: (response) => {
+          if (response.data.email) {
+            setPageStatus("2FA");
+            setSubmitted(false);
+            return "Check your email to complete login";
+          }
           if (response.data.accessToken) {
             localStorage.setItem("user", JSON.stringify(response.data));
             dispatch(loadUser())
@@ -136,7 +152,7 @@ function Login() {
   return (
     <div className="bg-primary h-screen flex justify-center">
       <div className="form bg-main flex max-w-md w-screen h-max justify-center p-8 m-auto">
-        <form className='text-center' onSubmit={handleLogin}>
+        {pageStatus === "LOGIN" ? <form className='text-center' onSubmit={handleLogin}>
           <img src={logo} className="mb-9 mx-auto" alt="" />
           <div className="title mb-8">Welcome to <br />
             <div className="small">User Account Management System</div></div>
@@ -157,7 +173,24 @@ function Login() {
           }} className="input-container  mb-8 text-primary cursor-pointer">
             Forgot Password?
           </div>
-        </form>
+        </form> :
+          <form className='text-center' onSubmit={handleLogin}>
+            <img src={logo} className="mb-9 mx-auto" alt="" />
+            <div className="title mb-8">Enter the 6 digit code <br />
+              <div className="small"> which was sent to your email.</div></div>
+            <div className="input-container  mb-8">
+              <input onChange={onChange2FA} className='bg' placeholder="code" type="text" name="code" id="code" />
+            </div>
+            <div className="input-container  mb-8">
+              <input className='submit bg-primary text-main cursor-pointer' type="submit" value="send" />
+            </div>
+            <div onClick={() => {
+              setPageStatus("LOGIN")
+            }} className="input-container  mb-8 text-primary cursor-pointer">
+              Back
+            </div>
+          </form>
+        }
       </div>
       <Modal ref={childRef} width="767px" children={
         <div>

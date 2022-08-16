@@ -22,4 +22,6 @@ export class LoginDto {
       ' A password at least contains one numeric digit, one supercase char and one lowercase char',
   })
   readonly password: string;
+
+  readonly twofactorAuthCode: string;
 }

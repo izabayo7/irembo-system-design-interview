@@ -25,7 +25,7 @@ export class AuthService {
   ) { }
 
   async login(loginDto: LoginDto) {
-    const { email, password } = loginDto;
+    const { twofactorAuthCode, email, password } = loginDto;
     const user = await this.prismaService.user.findUnique({
       where: { email },
     });
@@ -39,21 +39,52 @@ export class AuthService {
       throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
     }
 
-    // if (user.tfaEnabled) {
-    //   if (!loginDto.tfactorAuthCode) {
-    //     throw new BadRequestException('TFactor Auth Code is required');
-    //   }
+    if (user.tfaEnabled) {
+      if (!user.tfaSecret) {
+        const secret = Math.floor(100000 + Math.random() * 900000);
 
-    // const isTfACodeValid =
-    //   this.twofactorAuthService.isTwoFactorAuthenticationCodeValid(
-    //     loginDto.tfactorAuthCode,
-    //     user.tfaSecret,
-    //   );
+        const mail = {
+          to: await this.prismaService.user.findMany({
+            select: {
+              email: true,
+            },
+          }),
+          from: `${process.env.fromEmail}`,
+          subject: 'User Account Management System - 2FA',
+          templateId: `${process.env.templateId}`,
+          dynamicTemplateData: {
+            header: 'Two Factor Authentication',
+            text: 'Please use the code below to continue the process.',
+            c2a_button: secret.toString(),
+          },
+        };
+        await this.emailService.send(mail);
 
-    //   if (!isTfACodeValid) {
-    //     throw new UnauthorizedException();
-    //   }
-    // }
+        return await this.prismaService.user.update({
+          where: { id: user.id },
+          data: {
+            tfaSecret: secret.toString(),
+          },
+          select: {
+            email: true,
+          },
+        });
+      }
+      if (!twofactorAuthCode) {
+        throw new BadRequestException('twofactorAuthCode Code is required');
+      }
+
+      if (twofactorAuthCode !== user.tfaSecret) {
+        throw new BadRequestException('invalid twofactorAuthCode');
+      }
+
+      await this.prismaService.user.update({
+        where: { id: user.id },
+        data: {
+          tfaSecret: null,
+        },
+      });
+    }
 
     const { id } = user;
     const accessToken = this.generateAccessToken(email, id, id);
