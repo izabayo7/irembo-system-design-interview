@@ -1,4 +1,4 @@
-# irembo-system-design-interview
+# user-account-management
 
 
 ## Runing the app

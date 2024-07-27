@@ -21,8 +21,6 @@ services:
       context: ./user-account-management/
       args:
         - FILE_UPLOAD_PATH=$FILE_UPLOAD_PATH
-    ports:
-      - 5000:3000
     restart: always
     depends_on:
       - db
