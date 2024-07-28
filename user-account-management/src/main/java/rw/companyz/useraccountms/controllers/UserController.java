@@ -139,6 +139,29 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(new ApiResponse<>(userAccount, localize("responses.saveEntitySuccess"), HttpStatus.CREATED), HttpStatus.CREATED);
     }
 
+    @Operation(summary = "Upload account verification information", description = "Privileges: none \n Note: only the owner of the profile can upload the account verification information")
+    @PutMapping(value = "/upload/verification", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<ApiResponse<UserAccount>> uploadProfileVerification(@ModelAttribute CreateAccountVerificationDTO dto) throws Exception {
+        UserAccount userAccount = this.userService.uploadAccountVerificationInfo(dto);
+        return new ResponseEntity<>(new ApiResponse<>(userAccount, localize("responses.saveEntitySuccess"), HttpStatus.CREATED), HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Update account verification status", description = "Privileges: UPDATE_ACCOUNT_VERIFICATION")
+    @PreAuthorize("hasAuthority('UPDATE_ACCOUNT_VERIFICATION')")
+    @PutMapping(value = "/verificationStatus")
+    public ResponseEntity<ApiResponse<UserAccount>> updateProfileVerification(@Valid @RequestBody UpdateAccountVerificationStatusDTO dto) throws Exception {
+        UserAccount userAccount = this.userService.updateAccountVerificationStatus(dto);
+        return new ResponseEntity<>(new ApiResponse<>(userAccount, localize("responses.saveEntitySuccess"), HttpStatus.CREATED), HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Reset account verification status", description = "Privileges: RESET_ACCOUNT_VERIFICATION")
+    @PreAuthorize("hasAuthority('RESET_ACCOUNT_VERIFICATION')")
+    @PutMapping(value = "/resetVerificationStatus/{id}")
+    public ResponseEntity<ApiResponse<UserAccount>> resetProfileVerification(@Valid @PathVariable(value = "id") UUID userId) throws Exception {
+        UserAccount userAccount = this.userService.resetAccountVerificationStatus(userId);
+        return new ResponseEntity<>(new ApiResponse<>(userAccount, localize("responses.saveEntitySuccess"), HttpStatus.CREATED), HttpStatus.CREATED);
+    }
+
     @Operation(summary = "Get a user's raw file(profile picture,....)", description = "Privileges: none")
     @GetMapping("/raw/{name}")
     @ResponseBody

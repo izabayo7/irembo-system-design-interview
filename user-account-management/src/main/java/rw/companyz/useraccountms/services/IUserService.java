@@ -50,6 +50,9 @@ public interface IUserService {
     UserAccount updateById(UUID id, UpdateUserDTO dto) throws ResourceNotFoundException, DuplicateRecordException;
 
     UserAccount uploadProfilePicture(MultipartFile document) throws Exception;
+    UserAccount uploadAccountVerificationInfo(CreateAccountVerificationDTO dto) throws Exception;
+    UserAccount updateAccountVerificationStatus(UpdateAccountVerificationStatusDTO dto) throws Exception;
+    UserAccount resetAccountVerificationStatus(UUID id) throws Exception;
 
     UserAccount updateMyProfile(UpdateProfileDTO dto) throws ResourceNotFoundException, DuplicateRecordException;
 

@@ -1,5 +1,5 @@
 package rw.companyz.useraccountms.models.enums;
 
 public enum EVerificationStatus {
-    UNVERIFIED, PENDING, VERIFIED
+    UNVERIFIED, PENDING_VERIFICATION, VERIFIED
 }

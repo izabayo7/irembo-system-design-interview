@@ -21,7 +21,6 @@ import rw.companyz.useraccountms.repositories.*;
 import rw.companyz.useraccountms.security.dtos.CustomUserDTO;
 import rw.companyz.useraccountms.services.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -188,6 +187,67 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
+    @Transactional
+    public UserAccount uploadAccountVerificationInfo(CreateAccountVerificationDTO dto) throws Exception {
+        UserAccount userAccount = getLoggedInUser();
+
+        if (userAccount.getVerificationStatus() != EVerificationStatus.UNVERIFIED) {
+            throw new BadRequestAlertException("exceptions.badRequest.verificationAlreadySubmitted");
+        }
+
+        File file = this.fileService.create(dto.getFile());
+
+        userAccount.setNidOrPassport(dto.getNidOrPassport());
+        userAccount.setProfilePicture(file);
+        userAccount.setVerificationStatus(EVerificationStatus.PENDING_VERIFICATION);
+
+        userAccount = this.userRepository.save(userAccount);
+
+        UserAudit audit = new UserAudit(userAccount, EAuditType.DELETE, userAccount.getId(), userAccount.getFullName(), "", "User Account Verification Info uploaded", file);
+        this.userAuditRepository.save(audit);
+
+        return userAccount;
+    }
+
+    @Override
+    @Transactional
+    public UserAccount updateAccountVerificationStatus(UpdateAccountVerificationStatusDTO dto) throws Exception {
+        UserAccount userAccount = this.getById(dto.getUserId());
+
+        if (userAccount.getVerificationStatus() != EVerificationStatus.PENDING_VERIFICATION) {
+            throw new BadRequestAlertException("exceptions.badRequest.verificationNotPending");
+        }
+
+        userAccount.setVerificationStatus(dto.getVerificationStatus());
+
+        userAccount = this.userRepository.save(userAccount);
+
+        UserAudit audit = new UserAudit(userAccount, dto.getVerificationStatus() == EVerificationStatus.VERIFIED ? EAuditType.VERIFY : EAuditType.UPDATE, userAccount.getId(), userAccount.getFullName(), "", "User Account Verification Status updated", null);
+        this.userAuditRepository.save(audit);
+
+        return userAccount;
+    }
+
+    @Override
+    @Transactional
+    public UserAccount resetAccountVerificationStatus(UUID id) throws Exception {
+        UserAccount userAccount = this.getById(id);
+
+        if (userAccount.getVerificationStatus() != EVerificationStatus.VERIFIED) {
+            throw new BadRequestAlertException("exceptions.badRequest.accountNotVerified");
+        }
+
+        userAccount.setVerificationStatus(EVerificationStatus.PENDING_VERIFICATION);
+
+        userAccount = this.userRepository.save(userAccount);
+
+        UserAudit audit = new UserAudit(userAccount, EAuditType.RESET, userAccount.getId(), userAccount.getFullName(), "", "User Account Verification Status reset", null);
+        this.userAuditRepository.save(audit);
+
+        return userAccount;
+    }
+
+    @Override
     public UserAccount removeProfilePicture() throws ResourceNotFoundException {
         UserAccount userAccount = this.getLoggedInUser();
         this.fileService.getById(userAccount.getProfilePicture().getId());
@@ -343,7 +403,7 @@ public class UserServiceImpl implements IUserService {
 
             authenticationService.invalidateUserLogin(userAccount);
 
-            UserAudit audit = new UserAudit(userAccount, EAuditType.UPDATE, userAccount.getId(), userAccount.getFullName(), "RESET_PASSWORD", "Reset user's password", null);
+            UserAudit audit = new UserAudit(userAccount, EAuditType.RESET, userAccount.getId(), userAccount.getFullName(), "RESET_PASSWORD", "Reset user's password", null);
             this.userAuditRepository.save(audit);
 
             String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));

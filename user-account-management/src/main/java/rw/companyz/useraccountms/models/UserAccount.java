@@ -78,6 +78,10 @@ public class UserAccount extends Auditable {
     @JoinColumn(name = "official_document_id")
     private File officialDocument;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "verification_status")
+    private EVerificationStatus verificationStatus = EVerificationStatus.UNVERIFIED;
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @EqualsAndHashCode.Exclude
     private List<UserAccountRole> roles;
