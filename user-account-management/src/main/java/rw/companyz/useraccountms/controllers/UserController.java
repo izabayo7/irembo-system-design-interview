@@ -312,9 +312,6 @@ public class UserController extends BaseController {
     @PutMapping(path="/{id}/setPassword")
     public ResponseEntity<ApiResponse<UserAccount>> setPassword(@PathVariable(value = "id") UUID id, @Valid @RequestBody SetPasswordDTO dto) throws DuplicateRecordException, ResourceNotFoundException {
         UserAccount userAccount = this.userService.setInitialPassword(id, dto);
-
-
-
         return ResponseEntity.ok(new ApiResponse<>(userAccount, localize("responses.updateEntitySuccess"), HttpStatus.OK));
     }
 
