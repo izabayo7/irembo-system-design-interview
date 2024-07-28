@@ -48,6 +48,7 @@ public class UserAccount extends Auditable {
     @Column(name = "email_address", nullable = false, unique = true)
     private String emailAddress;
 
+    @JsonFormat(pattern="yyyy-MM-dd")
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
@@ -90,10 +91,10 @@ public class UserAccount extends Auditable {
     @Transient
     private Collection<GrantedAuthority> authorities;
 
-    @JsonIgnore
+    @Transient
     private String fullName;
 
-    @JsonIgnore
+    @Transient
     private Integer age;
 
     private boolean deletedFlag;

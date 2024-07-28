@@ -47,9 +47,11 @@ public class UserServiceImpl implements IUserService {
 
 //    private final INotificationService notificationService;
 
+    private final IEmailService emailService;
+
     ObjectMapper objectMapper = new ObjectMapper();
 
-    public UserServiceImpl(IUserRepository userRepository, IUserRoleRepository userRoleRepository, IUserAuditRepository userAuditRepository, IRoleService roleService, PasswordEncoder passwordEncoder, IRolePrivilegeService rolePrivilegeService, IFileService fileService, IJwtService jwtService, IUserRoleService userRoleReService, @Lazy IAuthenticationService authenticationService) {
+    public UserServiceImpl(IUserRepository userRepository, IUserRoleRepository userRoleRepository, IUserAuditRepository userAuditRepository, IRoleService roleService, PasswordEncoder passwordEncoder, IRolePrivilegeService rolePrivilegeService, IFileService fileService, IJwtService jwtService, IUserRoleService userRoleReService, @Lazy IAuthenticationService authenticationService, IEmailService emailService) {
         this.userRepository = userRepository;
         this.userRoleRepository = userRoleRepository;
         this.userAuditRepository = userAuditRepository;
@@ -60,6 +62,7 @@ public class UserServiceImpl implements IUserService {
         this.jwtService = jwtService;
         this.userRoleReService = userRoleReService;
         this.authenticationService = authenticationService;
+        this.emailService = emailService;
     }
 
     @Override
@@ -418,6 +421,13 @@ public class UserServiceImpl implements IUserService {
 //                                    .data(Map.of( "doneAt", now))
 //                                    .build())
 //                    .build());
+
+            try {
+                this.emailService.sendHtmlMessage(userAccount.getEmailAddress(), "Password Reset", "Your password has been reset.", "Please login with your new password.", "https://zplatform.s2s.rw", "Start now");
+            } catch (Exception e) {
+                log.info("Email not sent");
+                e.printStackTrace();
+            }
 
             return userAccount;
 
