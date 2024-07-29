@@ -388,9 +388,9 @@ public class UserServiceImpl implements IUserService {
             userAccount.setPassword(passwordEncoder.encode(dto.getNewPassword()));
             userAccount.setStatus(EUserStatus.ACTIVE);
         }else{ // forgot password initiated by a user
-            boolean isOTPVerified = userAccount.getOtpStatus() != null && userAccount.getOtpStatus().equals(EOTPStatus.VERIFIED);
-            boolean isOTPExpired = userAccount.getOtpExpiryDate() == null || LocalDateTime.now().isAfter(userAccount.getOtpExpiryDate());
-            if(!isOTPVerified || isOTPExpired) throw new BadRequestAlertException("exceptions.badRequest.expiredOtp");
+            if (LocalDateTime.now().isAfter(userAccount.getAuthTokenExpiryDate())) {
+                throw new InvalidCredentialsException("Login token has expired");
+            }
             userAccount.setPassword(passwordEncoder.encode(dto.getNewPassword()));
         }
 
@@ -415,9 +415,6 @@ public class UserServiceImpl implements IUserService {
 
             UserAudit audit = new UserAudit(userAccount, EAuditType.RESET, userAccount.getId(), userAccount.getFullName(), "RESET_PASSWORD", "Reset user's password", null);
             this.userAuditRepository.save(audit);
-
-            String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-
 
             this.emailService.sendHtmlMessage(userAccount.getEmailAddress(), "Password Reset", "Your password has been reset.", "Please login with your new password.", null, "Continue to login");
 

@@ -142,7 +142,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
         user.setAuthTokenExpiryDate(LocalDateTime.now().plusMinutes(5));
         userRepository.save(user);
 
-        this.emailService.sendHtmlMessage(user.getEmailAddress(), "User Account Management System - Login", "Login", "Please use the link below to login", "/token/"+token, "Continue to login");
+        this.emailService.sendHtmlMessage(user.getEmailAddress(), "User Account Management System - Login", "Login", "Please use the link below to login", "/login/with-email/"+token, "Continue to login");
 
         return LoginResponseDTO.builder().message("Login link sent to your email").build();
 
@@ -173,23 +173,21 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
         else throw new ResourceNotFoundException("User", "username", username);
     }
     @Override
-    public String initiateForgotPassword(ForgotPasswordDTO forgotPassword) throws  ResourceNotFoundException {
+    public LoginResponseDTO initiateForgotPassword(ForgotPasswordDTO forgotPassword) throws Exception {
         Optional<UserAccount> userAccount = this.userRepository.findByEmailAddress(forgotPassword.getEmailAddress());
         if(userAccount.isPresent()){
             UserAccount user = userAccount.get();
-            LocalDateTime now = LocalDateTime.now();
 
-            String otp = OTPUtil.generateOtp();
+            String token = UUID.randomUUID().toString();
+            user.setAuthToken(encryptionService.encrypt(token));
+            user.setAuthTokenExpiryDate(LocalDateTime.now().plusMinutes(5));
+            userRepository.save(user);
 
-            LocalDateTime fiveMin = now.plusMinutes(5);
-            user.setOtp(otp);
-            user.setOtpStatus(EOTPStatus.NOT_USED);
-            user.setOtpExpiryDate(fiveMin);
-
-            this.emailService.sendHtmlMessage(user.getEmailAddress(), "User Account Management System - Reset Password", "Reset Password", "Please use the code below to reset your password", "/reset-password/"+user.getEmailAddress(), otp);
+            this.emailService.sendHtmlMessage(user.getEmailAddress(), "User Account Management System - Reset Password", "Reset Password", "Please click the button below to reset your password", "/reset-password/"+token, "Reset Password");
 
             this.userRepository.save(user);
-            return otp;
+
+            return LoginResponseDTO.builder().message("Reset password link sent to your email").build();
 
         } else throw new ResourceNotFoundException("User", "email", forgotPassword.getEmailAddress());
     }

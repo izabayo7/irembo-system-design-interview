@@ -55,13 +55,13 @@ public class AuthenticationController extends BaseController {
     }
 
     @PostMapping("/forgotPassword")
-    public ResponseEntity<ApiResponse<String>> forgotPassword(@RequestBody ForgotPasswordDTO request) throws ResourceNotFoundException {
-        return ResponseEntity.ok(new ApiResponse<>(authenticationService.initiateForgotPassword(request), (Object) "", HttpStatus.OK));
+    public ResponseEntity<LoginResponseDTO> forgotPassword(@RequestBody ForgotPasswordDTO request) throws Exception {
+        return ResponseEntity.ok(authenticationService.initiateForgotPassword(request));
     }
 
     @PostMapping("/verifyOTP")
-    public ResponseEntity<ApiResponse<LoginResponseDTO>> verifyOtp(@RequestBody VerifyOtpDTO request) throws Exception {
-        return ResponseEntity.ok(new ApiResponse<>(authenticationService.verifyOTP(request), "", HttpStatus.OK));
+    public ResponseEntity<LoginResponseDTO> verifyOtp(@RequestBody VerifyOtpDTO request) throws Exception {
+        return ResponseEntity.ok(authenticationService.verifyOTP(request));
     }
 
 

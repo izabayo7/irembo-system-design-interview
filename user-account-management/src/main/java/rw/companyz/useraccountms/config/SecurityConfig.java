@@ -3,6 +3,7 @@ package rw.companyz.useraccountms.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletOutputStream;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,12 +23,17 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import rw.companyz.useraccountms.models.domains.ApiResponse;
 import rw.companyz.useraccountms.security.JwtAuthenticationEntryPoint;
 import rw.companyz.useraccountms.security.JwtAuthenticationFilter;
 import rw.companyz.useraccountms.services.impl.UserDetailServiceImpl;
 
 import javax.servlet.http.HttpServletResponse;
+
+import java.util.Arrays;
 
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
@@ -36,6 +42,9 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+	@Value("${frontend.url}")
+	private String frontendURL;
 
 	private final JwtAuthenticationEntryPoint unauthorizedHandler;
 	private final MessageSource messageSource;
@@ -63,7 +72,7 @@ public class SecurityConfig {
 			"/api/v1/auth/verifyToken",
 			"/api/v1/auth/forgotPassword",
 			"/api/v1/auth/verifyOTP",
-			"/api/v1/validateToken/**",
+			"/api/v1/auth/verifyToken",
 			// TODO: add more stuffs for login links, if necessary
 	};
 
@@ -94,7 +103,7 @@ public class SecurityConfig {
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http.csrf(AbstractHttpConfigurer::disable)
+		http.cors(cors -> cors.configurationSource(corsConfigurationSource())).csrf(AbstractHttpConfigurer::disable)
 				.authorizeHttpRequests(request -> request
 						.requestMatchers(AUTH_WHITELIST).permitAll()
 						.anyRequest().authenticated())
@@ -105,6 +114,18 @@ public class SecurityConfig {
 
 
 		return http.build();
+	}
+
+	@Bean
+	CorsConfigurationSource corsConfigurationSource() {
+		CorsConfiguration configuration = new CorsConfiguration();
+		configuration.setAllowedOrigins(Arrays.asList(frontendURL));
+		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+		configuration.setAllowedHeaders(Arrays.asList("*"));
+		configuration.setAllowCredentials(true);
+		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+		source.registerCorsConfiguration("/**", configuration);
+		return source;
 	}
 
 	@Bean

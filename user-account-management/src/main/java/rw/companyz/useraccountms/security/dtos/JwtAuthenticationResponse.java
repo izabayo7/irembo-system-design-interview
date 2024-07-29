@@ -14,8 +14,6 @@ public class JwtAuthenticationResponse {
 
 	private String tokenType;
 
-	private String refreshToken;
-
 	public JwtAuthenticationResponse(String token) {
 		this.accessToken = token;
 	}

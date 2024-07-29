@@ -24,7 +24,7 @@ public interface IAuthenticationService {
 
     UserAccount getAuthenticatedUser(String token) throws ResourceNotFoundException;
 
-    String initiateForgotPassword(ForgotPasswordDTO forgotPassword) throws  ResourceNotFoundException;
+    LoginResponseDTO initiateForgotPassword(ForgotPasswordDTO forgotPassword) throws Exception;
 
     LoginResponseDTO verifyOTP(VerifyOtpDTO verifyOtp) throws Exception;
 
