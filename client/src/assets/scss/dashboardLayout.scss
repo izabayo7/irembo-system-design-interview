@@ -72,7 +72,7 @@
     padding: 7px;
     max-width: 147px;
     width: 100%;
-    height: 41.96px;
+    height: fit-content;
     background: #bdc3ca;
     border-radius: 6px;
     cursor: pointer;
@@ -98,5 +98,10 @@
     height: 30px;
     border-radius: 50%;
     background: #696969;
+  }
+
+  img{
+    height: 50px;
+    width: 50px;
   }
 }

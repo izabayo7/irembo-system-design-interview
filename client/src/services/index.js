@@ -57,8 +57,8 @@ class AppServices {
     return axios.post(`${API_URL}/auth/signInToken`, body);
   }
 
-  getUsers() {
-    return axios.get(`${API_URL}/users`);
+  getUsers(currentPage, itemsPerPage) {
+    return axios.get(`${API_URL}/users?page=${currentPage}&limit=${itemsPerPage}`);
   }
 
 }

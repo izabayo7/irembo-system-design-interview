@@ -207,7 +207,7 @@ const DashboardLayout = ({ children }) => {
             ) : (
               ""
             )}
-            {user.profilePicture ? (
+            {user?.profilePicture ? (
               <img
                 src={`${API_URL}/users/raw/${user.profilePicture.name}`}
                 alt="profile"

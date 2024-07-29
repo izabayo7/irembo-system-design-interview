@@ -81,4 +81,14 @@ export const {
 export const selectUser = (state) => state.auth.user;
 export const selectIsLoggedIn = (state) => state.auth.isLoggedIn;
 
+export const hasPrivilege = (user, privilegeName) => {
+  if (!user || !user.roles) return false;
+
+  return user.roles.some(userRole =>
+    userRole.role.privileges.some(privilege =>
+      privilege.name === privilegeName
+    )
+  );
+};
+
 export default AuthSlice.reducer;
