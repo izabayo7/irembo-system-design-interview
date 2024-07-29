@@ -2,8 +2,10 @@ package rw.companyz.useraccountms.controllers;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import rw.companyz.useraccountms.exceptions.BadRequestException;
 import rw.companyz.useraccountms.exceptions.DuplicateRecordException;
 import rw.companyz.useraccountms.exceptions.ResourceNotFoundException;
@@ -24,9 +26,9 @@ public class AuthenticationController extends BaseController {
     private final IUserService userService;
 
 
-    @PostMapping("/signup")
-    public ResponseEntity<UserAccount> signup(@Valid  @RequestBody CreateUserDTO request) throws DuplicateRecordException, ResourceNotFoundException, BadRequestException {
-        return ResponseEntity.ok(userService.create(request));
+    @PostMapping(value = "/signup", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ResponseEntity<UserAccount> signup(@Valid  @ModelAttribute CreateUserDTO request, @RequestParam(value = "file", required = true) MultipartFile file) throws Exception {
+        return ResponseEntity.ok(authenticationService.signup(request, file));
     }
 
     @PostMapping("/signin")

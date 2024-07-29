@@ -13,6 +13,7 @@ import rw.companyz.useraccountms.security.ValidPassword;
 
 import javax.validation.constraints.NotBlank;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
@@ -32,6 +33,7 @@ public class CreateUserDTO {
     private EGender gender;
 
     @Email
+    @NotNull
     private String emailAddress;
 
     @NotNull
@@ -47,7 +49,6 @@ public class CreateUserDTO {
     @ValidPassword
     private String password;
 
-    @NotNull
-    private List<CreateUserRoleDTO> roleIds;
+    private List<CreateUserRoleDTO> roleIds = new ArrayList<>();
 
 }

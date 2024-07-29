@@ -136,12 +136,18 @@ public class UserServiceImpl implements IUserService {
         userAccount.setDeletedFlag(false);
         userAccount = this.userRepository.save(userAccount);
 
-        this.userRoleReService.createAll(dto.getRoleIds(), userAccount);
+        if (!dto.getRoleIds().isEmpty())
+            this.userRoleReService.createAll(dto.getRoleIds(), userAccount);
 
-        // TODO: handle the case where it's the a sign up (ie done by system)
-        CustomUserDTO userDTO = this.jwtService.extractLoggedInUser();
-        UserAudit audit = new UserAudit(userAccount, EAuditType.CREATE, userDTO.getId(), userDTO.getFullNames(), "CREATE_USER", "New user created", null);
-        this.userAuditRepository.save(audit);
+        try {
+            CustomUserDTO userDTO = this.jwtService.extractLoggedInUser();
+            UserAudit audit = new UserAudit(userAccount, EAuditType.CREATE, userDTO.getId(), userDTO.getFullNames(), "CREATE_USER", "New user created", null);
+            this.userAuditRepository.save(audit);
+        } catch (Exception e){
+            // Can't extract the logged-in user on sign up
+        }
+
+        this.emailService.sendHtmlMessage(userAccount.getEmailAddress(), "Account Created", "Your account has been created.", "Please login to continue.", "/login", "Continue to login");
 
         return userAccount;
     }

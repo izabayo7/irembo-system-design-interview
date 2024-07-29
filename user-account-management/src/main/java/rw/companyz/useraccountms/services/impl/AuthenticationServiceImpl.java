@@ -8,9 +8,14 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import rw.companyz.useraccountms.exceptions.*;
+import rw.companyz.useraccountms.fileHandling.File;
 import rw.companyz.useraccountms.models.*;
+import rw.companyz.useraccountms.models.dtos.CreateUserDTO;
 import rw.companyz.useraccountms.models.dtos.ForgotPasswordDTO;
+import rw.companyz.useraccountms.models.dtos.SignupDTO;
 import rw.companyz.useraccountms.models.dtos.VerifyOtpDTO;
 import rw.companyz.useraccountms.models.enums.ELoginStatus;
 import rw.companyz.useraccountms.models.enums.EOTPStatus;
@@ -43,6 +48,8 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
     private final IUserService userService;
 
     private final IEmailService emailService;
+
+    private final IFileService fileService;
 
     @Override
     public LoginResponseDTO signin(LoginRequest request) throws ResourceNotFoundException {
@@ -87,6 +94,18 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
                  throw new InvalidCredentialsException("exceptions.invalidEmailPassword");
              }
          }
+    }
+
+
+    @Override
+    @Transactional
+    public UserAccount signup(CreateUserDTO request, MultipartFile _file) throws Exception {
+        UserAccount userAccount = this.userService.create(request);
+
+        File file = this.fileService.create(_file);
+        userAccount.setProfilePicture(file);
+
+        return this.userRepository.save(userAccount);
     }
 
     private LoginResponseDTO initiateMultiFactorAuthentication(UserAccount userAccount) {
