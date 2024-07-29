@@ -14,14 +14,15 @@
       font-size: 17px;
     }
   }
-  input {
+  input,#btn {
     width: 300px;
     max-width: 100%;
-    height: 50px;
+    height: 40px;
     font-family: "Inter";
     font-style: normal;
     font-weight: 400;
     font-size: 17px;
+    border-radius: 5px;
 
     &.bg {
       padding: 0 15px;

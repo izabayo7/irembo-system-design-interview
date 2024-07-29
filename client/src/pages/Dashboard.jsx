@@ -185,7 +185,7 @@ function Dashboard() {
                           "
                         >
                           <td className="flex">{user.firstName} {user.lastName} {user.accountVerification?.verificationStatus === "VERIFIED" && <img src={verified} className="ml-2" style={{ width: '15px' }} alt="verified" />}</td>
-                          <td>{user.email}</td>
+                          <td>{user.emailAddress}</td>
                           <td>{user.gender}</td>
                           <td>{user.maritalStatus}</td>
                           <td>{parseInt(new Date().getFullYear()) - parseInt(new Date(user.dateOfBirth).getFullYear())}</td>

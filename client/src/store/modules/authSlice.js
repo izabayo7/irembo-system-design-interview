@@ -16,6 +16,7 @@ export const loadUser = createAsyncThunk(
     const token = localStorage.getItem("user");
     if (token) {
       const bearer = JSON.parse(token || "{}");
+      console.dir({ bearer })
       axios.defaults.headers.common[
         "Authorization"
       ] = `Bearer ${bearer?.accessToken}`;
@@ -43,6 +44,7 @@ export const AuthSlice = createSlice({
       state.isLoggedIn = true;
     },
     logout: (state) => {
+      AppServices.logout()
       localStorage.removeItem("user");
       state.user = undefined;
       state.isLoggedIn = false;

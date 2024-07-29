@@ -17,6 +17,7 @@ module.exports = {
       customBg: '#F6F7FB',
       customDisabled: '#BDC3CA',
       customBrown: '#696969',
+      gray: '#dcdcde'
     }
   },
   plugins: [],

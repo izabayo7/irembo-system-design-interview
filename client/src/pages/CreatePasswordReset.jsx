@@ -4,7 +4,6 @@ import logo from '../assets/images/logo.png'
 import '../assets/scss/login.scss'
 import toast from 'react-hot-toast';
 import AppServices from "../services";
-import Modal from '../components/Modal';
 
 import {
   loadUser,
@@ -45,27 +44,24 @@ function CreatePasswordReset() {
       return toast.error('Email is required');
     }
 
-    toast.promise(
-      AppServices.createPasswordReset({ email }),
-      {
-        loading: 'Creating password reset ...',
-        success: (response) => {
-          navigate('/');
-          setSubmitted(false);
-          return "Password reset created successfully, check your email";
-        },
-        error: (error) => {
-          const message =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-          setSubmitted(false);
-          return message;
-        },
-      }
-    );
+    toast.promise(AppServices.forgotPassword({ emailAddress: email }), {
+      loading: "Creating password reset ...",
+      success: (response) => {
+        navigate("/");
+        setSubmitted(false);
+        return "Password reset created successfully, check your email";
+      },
+      error: (error) => {
+        const message =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
+        setSubmitted(false);
+        return message;
+      },
+    });
   }
 
 

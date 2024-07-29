@@ -1,24 +1,21 @@
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef } from "react";
 
-import logo from '../assets/images/logo.png'
-import '../assets/scss/login.scss'
-import toast from 'react-hot-toast';
+import logo from "../assets/images/logo.png";
+import "../assets/scss/login.scss";
+import toast from "react-hot-toast";
 import AppServices from "../services";
-import Modal from '../components/Modal';
+import axios from "axios";
 
-import {
-  loadUser,
-  selectIsLoggedIn,
-} from '../store/modules/authSlice';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { loadUser, selectIsLoggedIn } from "../store/modules/authSlice";
+import { useNavigate, useParams } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 
 function UpdatePasswordReset() {
-  const [email, SetEmail] = useState('')
-  const [submitted, setSubmitted] = useState(false)
-  const [password, SetPassword] = useState('')
-  const [user, setUser] = useState({})
-  const dispatch = useDispatch()
+  const [email, SetEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [password, SetPassword] = useState("");
+  const [user, setUser] = useState({});
+  const dispatch = useDispatch();
 
   const childRef = useRef(null);
 
@@ -30,26 +27,26 @@ function UpdatePasswordReset() {
   const { token } = useParams();
 
   useEffect(() => {
-    AppServices.getPasswordReset(token).then(res => {
-      if (res.data.expired) {
-        setPageStatus("EXPIRED");
-      } else if (!res.data.isActive) {
-        setPageStatus("INACTIVE");
-      } else {
+    AppServices.verifyToken(token)
+      .then((res) => {
         setPageStatus("LOADED");
-      }
-    }).catch(err => {
-      setPageStatus("ERROR");
-    })
-  }, [])
+        axios.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${res.data.token.accessToken}`;
+        setUser(res.data.userAccount);
+      })
+      .catch((err) => {
+        setPageStatus("ERROR");
+      });
+  }, []);
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate('/');
+      navigate("/");
     } else {
       dispatch(loadUser());
     }
-  }, [isLoggedIn])
+  }, [isLoggedIn]);
 
   const handleUpdatePasswordReset = (e) => {
     e.preventDefault();
@@ -73,82 +70,119 @@ function UpdatePasswordReset() {
       return toast.error("Passwords do not match");
     }
 
-
-    toast.promise(
-      AppServices.updatePasswordReset({ token, password: formData.password }),
-      {
-        loading: 'Resetting password ...',
-        success: (response) => {
-          if (response.data.token) {
-            localStorage.setItem("user", JSON.stringify(response.data));
-            dispatch(loadUser())
-          }
-          navigate('/login');
-          setSubmitted(false);
-          return "Password reset successful";
-        },
-        error: (error) => {
-          const message =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-          setSubmitted(false);
-          return message;
-        },
-      }
-    );
-  }
+    toast.promise(AppServices.setPassword(user.id, formData.password), {
+      loading: "Resetting password ...",
+      success: (response) => {
+        navigate("/login");
+        setSubmitted(false);
+        return "Password reset successful";
+      },
+      error: (error) => {
+        const message =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
+        setSubmitted(false);
+        return message;
+      },
+    });
+  };
 
   return (
     <div className="bg-primary h-screen flex justify-center">
       <div className="form bg-main flex max-w-md w-screen h-max justify-center p-8 m-auto">
-        {pageStatus === "LOADED" ? <form className='text-center' onSubmit={handleUpdatePasswordReset}>
-          <img style={{ width: '279px', height: '60px' }} src={logo} className="mb-9 mx-auto" alt="" />
-          <div className="title mb-8">Create a new password<br />
-          </div>
-          <div className="input-container  mb-8">
-            <input onChange={(e) => { setFormData({ ...formData, password: e.target.value || "" }) }} className='bg' placeholder='password' type="password" name="" id="" />
-          </div>
-          <div className="input-container  mb-8">
-            <input onChange={(e) => { setFormData({ ...formData, confirmPassword: e.target.value || "" }) }} placeholder='confirm password' type="password" id="confirmpassword" className='bg' />
-          </div>
-          <div className="input-container  mb-8">
-            <input className='submit bg-primary text-main cursor-pointer' type="submit" value="submit" />
-          </div>
-        </form> :
-          pageStatus === "LOADING" ? <div className="text-center">
+        {pageStatus === "LOADED" ? (
+          <form className="text-center" onSubmit={handleUpdatePasswordReset}>
+            <img
+              style={{ width: "279px", height: "60px" }}
+              src={logo}
+              className="mb-9 mx-auto"
+              alt=""
+            />
+            <div className="title mb-8">
+              Create a new password
+              <br />
+            </div>
+            <div className="input-container  mb-8">
+              <input
+                onChange={(e) => {
+                  setFormData({ ...formData, password: e.target.value || "" });
+                }}
+                className="bg"
+                placeholder="password"
+                type="password"
+                name=""
+                id=""
+              />
+            </div>
+            <div className="input-container  mb-8">
+              <input
+                onChange={(e) => {
+                  setFormData({
+                    ...formData,
+                    confirmPassword: e.target.value || "",
+                  });
+                }}
+                placeholder="confirm password"
+                type="password"
+                id="confirmpassword"
+                className="bg"
+              />
+            </div>
+            <div className="input-container  mb-8">
+              <input
+                className="submit bg-primary text-main cursor-pointer"
+                type="submit"
+                value="submit"
+              />
+            </div>
+          </form>
+        ) : pageStatus === "LOADING" ? (
+          <div className="text-center">
             <div className="title mb-8">Loading...</div>
-          </div> :
-            pageStatus === "EXPIRED" ? <div className="text-center">
-              <div className="title mb-8">Password reset link has expired</div>
-              <div onClick={() => {
-                navigate('/login')
-              }} className="input-container  mb-8 text-primary cursor-pointer">
-                Back to login
-              </div>
-            </div> :
-              pageStatus === "INACTIVE" ? <div className="text-center">
-                <div className="title mb-8">Password reset link has been used</div>
-                <div onClick={() => {
-                  navigate('/login')
-                }} className="input-container  mb-8 text-primary cursor-pointer">
-                  Back to login
-                </div>
-              </div> :
-                <div className="text-center">
-                  <div className="title mb-8">Invalid token</div>
-                  <div onClick={() => {
-                    navigate('/login')
-                  }} className="input-container  mb-8 text-primary cursor-pointer">
-                    Back to login
-                  </div>
-                </div>}
+          </div>
+        ) : pageStatus === "EXPIRED" ? (
+          <div className="text-center">
+            <div className="title mb-8">Password reset link has expired</div>
+            <div
+              onClick={() => {
+                navigate("/login");
+              }}
+              className="input-container  mb-8 text-primary cursor-pointer"
+            >
+              Back to login
+            </div>
+          </div>
+        ) : pageStatus === "INACTIVE" ? (
+          <div className="text-center">
+            <div className="title mb-8">Password reset link has been used</div>
+            <div
+              onClick={() => {
+                navigate("/login");
+              }}
+              className="input-container  mb-8 text-primary cursor-pointer"
+            >
+              Back to login
+            </div>
+          </div>
+        ) : (
+          <div className="text-center">
+            <div className="title mb-8">Invalid token</div>
+            <div
+              onClick={() => {
+                navigate("/login");
+              }}
+              className="input-container  mb-8 text-primary cursor-pointer"
+            >
+              Back to login
+            </div>
+          </div>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
-export default UpdatePasswordReset
-
+export default UpdatePasswordReset;

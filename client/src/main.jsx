@@ -13,20 +13,29 @@ import { Toaster } from 'react-hot-toast';
 import Login from './pages/Login';
 import CreatePasswordReset from './pages/CreatePasswordReset';
 import UpdatePasswordReset from './pages/UpdatePasswordReset';
+import SigninWithEmail from "./pages/SigninWithEmail";
 import Dashboard from './pages/Dashboard';
 import NotFound from './pages/404';
 import DashboardLayout from './components/Layout/Dashboard';
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <React.StrictMode>
       <Provider store={store}>
         <Router>
           <Routes>
-            <Route path="/" element={<DashboardLayout children={<Dashboard />} />} />
+            <Route
+              path="/"
+              element={<DashboardLayout children={<Dashboard />} />}
+            />
             <Route path="login" element={<Login />} />
             <Route path="reset-password" element={<CreatePasswordReset />} />
-            <Route path="reset-password/:token" element={<UpdatePasswordReset />} />
+            <Route
+              path="reset-password/:token"
+              element={<UpdatePasswordReset />}
+            />
+            <Route path="login/with-email" element={<SigninWithEmail />} />
+            <Route path="login/with-email/:token" element={<SigninWithEmail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
@@ -34,4 +43,4 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Toaster />
     </React.StrictMode>
   </React.StrictMode>
-)
+);
