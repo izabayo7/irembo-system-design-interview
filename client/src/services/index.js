@@ -25,8 +25,8 @@ class AppServices {
     return axios.get(`${API_URL}/auth/currentUser`);
   }
 
-  register(body) {
-    return axios.post(`${API_URL}/users`, body);
+  signup(body) {
+    return axios.post(`${API_URL}/auth/signup`, body);
   }
 
   deleteUser() {

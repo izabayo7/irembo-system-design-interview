@@ -1,26 +1,29 @@
-import { useEffect, useRef, useState, } from 'react'
-import BG from '../../assets/images/nav-bg.svg'
-import logo from '../../assets/images/logo.svg'
-import activeHome from '../../assets/images/white-home-icon.svg'
-import home from '../../assets/images/blued-home-icon.svg'
-import '../../assets/scss/dashboardLayout.scss'
-import { NavLink, useNavigate } from 'react-router-dom'
-import { useLocation } from 'react-router-dom'
-import { selectUser, logout, loadUser, selectIsLoggedIn } from '../../store/modules/authSlice'
-import Modal from '../Modal';
-import toast from 'react-hot-toast';
+import { useEffect, useRef, useState } from "react";
+import BG from "../../assets/images/nav-bg.svg";
+import logo from "../../assets/images/logo.svg";
+import activeHome from "../../assets/images/white-home-icon.svg";
+import home from "../../assets/images/blued-home-icon.svg";
+import "../../assets/scss/dashboardLayout.scss";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
+import {
+  selectUser,
+  logout,
+  loadUser,
+  selectIsLoggedIn,
+} from "../../store/modules/authSlice";
+import Modal from "../Modal";
+import toast from "react-hot-toast";
 import AppServices from "../../services";
-import { useDispatch, useSelector } from 'react-redux'
-
+import { API_URL } from "../../services";
+import { useDispatch, useSelector } from "react-redux";
 
 const DashboardLayout = ({ children }) => {
-
   const childRef = useRef(null);
 
   const toggleModal = () => {
-    if (childRef.current)
-      childRef.current.toggleModal();
-  }
+    if (childRef.current) childRef.current.toggleModal();
+  };
 
   const [menuStatus, setMenuStatus] = useState(false);
   const [sidebarStatus, setSidebarStatus] = useState(false);
@@ -28,10 +31,10 @@ const DashboardLayout = ({ children }) => {
   const [loggedInUser, setLoggedInUser] = useState({});
   const toggleMenu = () => {
     setMenuStatus(!menuStatus);
-  }
+  };
   const toggleSidebar = () => {
     setSidebarStatus(!sidebarStatus);
-  }
+  };
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const isLoggedIn = useSelector(selectIsLoggedIn);
@@ -39,14 +42,14 @@ const DashboardLayout = ({ children }) => {
 
   const handleLogout = () => {
     dispatch(logout());
-    navigate('/login');
-  }
+    navigate("/login");
+  };
 
   useEffect(() => {
     if (isLoggedIn === 0) {
-      navigate('/login');
+      navigate("/login");
     }
-  }, [isLoggedIn])
+  }, [isLoggedIn]);
 
   useEffect(() => {
     if (!loaded) {
@@ -55,26 +58,42 @@ const DashboardLayout = ({ children }) => {
   }, [loaded]);
 
   useEffect(() => {
-    if (user)
-      setLoaded(true);
+    if (user) setLoaded(true);
   }, [user]);
-
 
   useEffect(() => {
     if (sidebarStatus) {
       toggleSidebar();
     }
-  }, [useLocation().pathname])
-
+  }, [useLocation().pathname]);
 
   const updateUser = () => {
-    const { firstName, lastName, email, dateOfBirth, maritalStatus, gender, nationality } = loggedInUser;
+    const {
+      firstName,
+      lastName,
+      email,
+      dateOfBirth,
+      maritalStatus,
+      gender,
+      nationality,
+    } = loggedInUser;
     toast.promise(
-      AppServices.updateUser({ firstName, lastName, email, dateOfBirth, maritalStatus, gender, nationality }, user?.id),
+      AppServices.updateUser(
+        {
+          firstName,
+          lastName,
+          email,
+          dateOfBirth,
+          maritalStatus,
+          gender,
+          nationality,
+        },
+        user?.id
+      ),
       {
-        loading: 'Updating account ...',
+        loading: "Updating account ...",
         success: (response) => {
-          dispatch(loadUser())
+          dispatch(loadUser());
           toggleModal();
           return "Account updated successfully";
         },
@@ -87,13 +106,12 @@ const DashboardLayout = ({ children }) => {
             error.toString();
           if (message.includes("required pattern"))
             if (message.includes("phone")) return "invalid phone number";
-            else return "invalid nationalId"
+            else return "invalid nationalId";
           return message;
         },
       }
     );
-  }
-
+  };
 
   return (
     <>
@@ -189,11 +207,21 @@ const DashboardLayout = ({ children }) => {
             ) : (
               ""
             )}
-            <div className="avatar">
-              <div className="mt-2">
-                {user?.firstName ? user?.firstName[0] : ""}
+            {user.profilePicture ? (
+              <img
+                src={`${API_URL}/users/raw/${user.profilePicture.name}`}
+                alt="profile"
+                className="rounded-full"
+                height={50}
+                width={50}
+              />
+            ) : (
+              <div className="avatar">
+                <div className="mt-2">
+                  {user?.firstName ? user?.firstName[0] : ""}
+                </div>
               </div>
-            </div>
+            )}
             <div className="user-name ml-2 mt-1">{user?.firstName} ...</div>
           </div>
         </div>
@@ -598,6 +626,6 @@ const DashboardLayout = ({ children }) => {
       />
     </>
   );
-}
+};
 
-export default DashboardLayout
+export default DashboardLayout;

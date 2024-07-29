@@ -18,6 +18,7 @@ function Login() {
   const [file, setFile] = useState(null);
   const [pageStatus, setPageStatus] = useState("LOGIN");
   const [user, setUser] = useState({
+
     gender: "MALE",
     maritalStatus: "SINGLE",
     role: "USER",
@@ -125,18 +126,21 @@ function Login() {
     if (user.password !== user.confirmPassword)
       return toast.error("passwords should match");
 
+    if (file == null)
+      return toast.error("Please upload profile picture");
+
     if (submitted) return;
     setSubmitted(true);
 
     const formData = new FormData();
-    formData.append("profilePhoto", file);
+    formData.append("file", file);
 
     for (const key in user) {
       if (key === "confirmPassword") continue;
       formData.append(key, user[key]);
     }
 
-    toast.promise(AppServices.register(formData), {
+    toast.promise(AppServices.signup(formData), {
       loading: "Registering ...",
       success: () => {
         toggleModal();
@@ -151,9 +155,6 @@ function Login() {
           error.message ||
           error.toString();
         setSubmitted(false);
-        if (message.includes("required pattern"))
-          if (message.includes("phone")) return "invalid phone number";
-          else return "invalid nationalId";
         return message;
       },
     });
@@ -225,9 +226,9 @@ function Login() {
             </div>
             <div className="input-container  mb-3">
               <input
-              onClick={()=>{
-                navigate("/login/with-email");
-              }}
+                onClick={() => {
+                  navigate("/login/with-email");
+                }}
                 className="submit bg-secondary text-main cursor-pointer"
                 type="submit"
                 value="Email"
@@ -290,7 +291,9 @@ function Login() {
                 justifyContent: "center",
               }}
             >
-              <form>
+              <form
+                onSubmit={handleRegister}
+              >
                 <div className="">
                   <div className="px-4 py-5 bg-white sm:p-6">
                     <div className="grid grid-cols-6 gap-6">
@@ -311,6 +314,7 @@ function Login() {
                           type="text"
                           id="first-name"
                           className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                          required
                         />
                       </div>
 
@@ -331,6 +335,7 @@ function Login() {
                           type="text"
                           id="last-name"
                           className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                          required
                         />
                       </div>
 
@@ -343,11 +348,12 @@ function Login() {
                         </label>
                         <input
                           onChange={(e) => {
-                            setUser({ ...user, email: e.target.value || "" });
+                            setUser({ ...user, emailAddress: e.target.value || "" });
                           }}
                           type="email"
                           id="email"
                           className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                          required
                         />
                       </div>
 
@@ -364,6 +370,7 @@ function Login() {
                           }}
                           id="gender"
                           className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                          required
                         >
                           <option value="MALE">Male</option>
                           <option value="FEMALE">Female</option>
@@ -385,6 +392,7 @@ function Login() {
                           }}
                           id="maritalStatus"
                           className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                          required
                         >
                           <option value="SINGLE">Single</option>
                           <option value="MARRIED">Married</option>
@@ -411,6 +419,7 @@ function Login() {
                           }}
                           id="nationality"
                           className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                          required
                         >
                           <option value="AFGHAN">Afghan</option>
                           <option value="ALBANIAN">Albanian</option>
@@ -642,6 +651,7 @@ function Login() {
                           type="date"
                           id="dob"
                           className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                          required
                         />
                       </div>
 
@@ -662,6 +672,7 @@ function Login() {
                           type="password"
                           id="password"
                           className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                          required
                         />
                       </div>
                       <div className="col-span-6 sm:col-span-3">
@@ -681,6 +692,7 @@ function Login() {
                           type="password"
                           id="confirmPassword"
                           className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                          required
                         />
                       </div>
 
@@ -724,7 +736,7 @@ function Login() {
                     </div>
                   </div>
                   <div className="">
-                    <button type="submit" hidden></button>
+                    <button id="signup-bt" type="submit" hidden></button>
                   </div>
                 </div>
               </form>
@@ -734,7 +746,13 @@ function Login() {
                 <button className="cancel mr-9" onClick={toggleModal}>
                   Cancel
                 </button>
-                <button onClick={handleRegister}>Submit</button>
+                <button
+                  onClick={() => {
+                    document.getElementById("signup-bt").click();
+                  }}
+                >
+                  Submit
+                </button>
               </div>
             </div>
           </div>
