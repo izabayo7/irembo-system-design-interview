@@ -41,7 +41,8 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
     private  final IRolePrivilegeService rolePrivilegeService;
 
     private final IUserService userService;
-//    private final INotificationService notificationService;
+
+    private final IEmailService emailService;
 
     @Override
     public LoginResponseDTO signin(LoginRequest request) throws ResourceNotFoundException {
@@ -65,15 +66,12 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
              authenticationManager.authenticate(
                      new UsernamePasswordAuthenticationToken(request.getLogin(), request.getPassword()));
 
+             if (user.isMfaEnabled()) {
+                 return initiateMultiFactorAuthentication(user);
+             }
 
-             //if valid credentials, save last login
-             user.setLastLogin(LocalDateTime.now(ZoneId.of("Africa/Kigali")));
-             user.setAccountLocked(false);
-             userRepository.save(user);
+             return completeSignIn(user);
 
-             var jwt = generateJWTToken(user);
-
-             return LoginResponseDTO.builder().token(jwt).build();
 
          }catch(Exception e){
             log.info("Exception: " + e.getMessage());
@@ -89,6 +87,35 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
                  throw new InvalidCredentialsException("exceptions.invalidEmailPassword");
              }
          }
+    }
+
+    private LoginResponseDTO initiateMultiFactorAuthentication(UserAccount userAccount) {
+        String otp = OTPUtil.generateOtp();
+        userAccount.setOtp(otp);
+        userAccount.setOtpStatus(EOTPStatus.NOT_USED);
+        userAccount.setOtpExpiryDate(LocalDateTime.now().plusMinutes(5));
+        userRepository.save(userAccount);
+
+        this.emailService.sendHtmlMessage(userAccount.getEmailAddress(), "User Account Management System - MFA", "Multi-factor authentication", "Please use the code below to login", null, otp);
+
+        return LoginResponseDTO.builder()
+                .requiresMfa(true)
+                .message("Please enter the MFA code sent to your email.")
+                .build();
+    }
+
+    private LoginResponseDTO completeSignIn(UserAccount user) throws Exception {
+        user.setLastLogin(LocalDateTime.now(ZoneId.of("Africa/Kigali")));
+
+        user.setAccountLocked(false);
+        user.setOtp(null);
+        user.setOtpExpiryDate(null);
+        user.setOtpStatus(null);
+
+        userRepository.save(user);
+
+        var jwt = generateJWTToken(user);
+        return LoginResponseDTO.builder().token(jwt).message("Login successful").build();
     }
 
     @Override
@@ -107,31 +134,33 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
     }
 
     @Override
-    public LoginTokenResponseDTO signInToken(LoginRequest request) throws Exception {
-        this.signin(request);
-
-        UserAccount user = userRepository.findByEmailAddress(request.getLogin()).orElseThrow(InvalidCredentialsException::new);
+    public LoginResponseDTO signInToken(LoginTokenRequestDTO request) throws Exception {
+        UserAccount user = userRepository.findByEmailAddress(request.getToken()).orElseThrow(InvalidCredentialsException::new);
 
         String token = UUID.randomUUID().toString();
         user.setAuthToken(encryptionService.encrypt(token));
-        user.setAuthTokenExpiryDate(LocalDateTime.now().plusYears(1));
+        user.setAuthTokenExpiryDate(LocalDateTime.now().plusMinutes(5));
         userRepository.save(user);
 
-        return LoginTokenResponseDTO.builder().token(token).build();
+        this.emailService.sendHtmlMessage(user.getEmailAddress(), "User Account Management System - Login", "Login", "Please use the link below to login", "/token/"+token, "Continue to login");
+
+        return LoginResponseDTO.builder().message("Login link sent to your email").build();
 
     }
 
-
     @Override
-    public VerifyTokenResponseDTO verifyToken(LoginTokenResponseDTO request) throws Exception {
+    public VerifyTokenResponseDTO verifyToken(LoginTokenRequestDTO request) throws Exception {
 
         String encryptedToken = encryptionService.encrypt(request.getToken());
         UserAccount user = userRepository.findByAuthToken(encryptedToken).orElseThrow(InvalidCredentialsException::new);
 
+        if (LocalDateTime.now().isAfter(user.getAuthTokenExpiryDate())) {
+            throw new InvalidCredentialsException("Login token has expired");
+        }
+
         var jwtToken = generateJWTToken(user);
 
         return VerifyTokenResponseDTO.builder().userAccount(user).token(jwtToken).build();
-
     }
 
     @Override
@@ -152,18 +181,12 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
 
             String otp = OTPUtil.generateOtp();
 
-            LocalDateTime oneHourLater = now.plusMinutes(5);
+            LocalDateTime fiveMin = now.plusMinutes(5);
             user.setOtp(otp);
             user.setOtpStatus(EOTPStatus.NOT_USED);
-            user.setOtpExpiryDate(oneHourLater);
+            user.setOtpExpiryDate(fiveMin);
 
-//            notificationService.sendNotification(NotificationPayload.builder()
-//                    .notificationType(NotificationType.EMAIL)
-//                    .destinations(List.of(userAccount.get().getEmailAddress()))
-//                    .subject("Reset Password Initiated")
-//                    .templatePayload(TemplatePayload.builder().templateName(EmailTemplate.RESETPASSWORD).data(Map.of("verificationCode", otp)).build())
-//                    .build());
-
+            this.emailService.sendHtmlMessage(user.getEmailAddress(), "User Account Management System - Reset Password", "Reset Password", "Please use the code below to reset your password", "/reset-password/"+user.getEmailAddress(), otp);
 
             this.userRepository.save(user);
             return otp;
@@ -172,7 +195,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
     }
 
     @Override
-    public boolean verifyOTP(VerifyOtpDTO verifyOtp) throws ResourceNotFoundException {
+    public LoginResponseDTO verifyOTP(VerifyOtpDTO verifyOtp) throws Exception {
         Optional<UserAccount> userAccount = this.userRepository.findByEmailAddress(verifyOtp.getEmailAddress());
         if (userAccount.isEmpty()) {
             throw new ResourceNotFoundException("User", "email", verifyOtp.getEmailAddress());
@@ -198,7 +221,7 @@ public class AuthenticationServiceImpl implements IAuthenticationService {
         user.setOtpStatus(EOTPStatus.VERIFIED);
         this.userRepository.save(user);
 
-        return true;
+        return completeSignIn(user);
     }
 
     @Override

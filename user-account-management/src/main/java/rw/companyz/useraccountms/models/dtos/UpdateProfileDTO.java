@@ -36,4 +36,7 @@ public class UpdateProfileDTO {
     @NotNull
     private LocalDate dateOfBirth;
 
+    @NotNull
+    private boolean mfaEnabled;
+
 }

@@ -10,7 +10,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginResponseDTO {
-	
+	private boolean requiresMfa = false;
+	private String message;
 	private JwtAuthenticationResponse token;
 
 }

@@ -45,8 +45,6 @@ public class UserServiceImpl implements IUserService {
 
     private final IAuthenticationService authenticationService;
 
-//    private final INotificationService notificationService;
-
     private final IEmailService emailService;
 
     ObjectMapper objectMapper = new ObjectMapper();
@@ -228,6 +226,12 @@ public class UserServiceImpl implements IUserService {
         UserAudit audit = new UserAudit(userAccount, dto.getVerificationStatus() == EVerificationStatus.VERIFIED ? EAuditType.VERIFY : EAuditType.UPDATE, userAccount.getId(), userAccount.getFullName(), "", "User Account Verification Status updated", null);
         this.userAuditRepository.save(audit);
 
+        if(dto.getVerificationStatus() == EVerificationStatus.VERIFIED){
+            this.emailService.sendHtmlMessage(userAccount.getEmailAddress(), "Account Verified", "Your account has been verified.", "Please login to continue.", null, "Continue to login");
+        } else {
+            this.emailService.sendHtmlMessage(userAccount.getEmailAddress(), "Account Verification Failed", "Your account verification has failed.", "Reason: "+ dto.getRejectionReason(), null, "Login to retry");
+        }
+
         return userAccount;
     }
 
@@ -297,6 +301,7 @@ public class UserServiceImpl implements IUserService {
         userAccount.setNationality(dto.getNationality());
         userAccount.setMaritalStatus(dto.getMaritalStatus());
         userAccount.setDateOfBirth(dto.getDateOfBirth());
+        userAccount.setMfaEnabled(dto.isMfaEnabled());
 
         this.userRepository.save(userAccount);
 
@@ -320,6 +325,8 @@ public class UserServiceImpl implements IUserService {
         CustomUserDTO userDTO = this.jwtService.extractLoggedInUser();
         UserAudit audit = new UserAudit(userAccount, EAuditType.UPDATE, userDTO.getId(), userDTO.getFullNames(), "UPDATE_USER", "User Password updated", null);
         this.userAuditRepository.save(audit);
+
+        this.emailService.sendHtmlMessage(userAccount.getEmailAddress(), "Password Updated", "Your password has been updated.", "Please login with your new password.", null, "Continue to login");
 
         return userAccount;
     }
@@ -411,23 +418,9 @@ public class UserServiceImpl implements IUserService {
 
             String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-//            notificationService.sendNotification(NotificationPayload.builder()
-//                    .notificationType(NotificationType.EMAIL)
-//                    .destinations(List.of(userAccount.getEmailAddress()))
-//                    .subject("Your password has been reset!")
-//                    .templatePayload(
-//                            TemplatePayload.builder()
-//                                    .templateName(EmailTemplate.RESET_PASSWORD)
-//                                    .data(Map.of( "doneAt", now))
-//                                    .build())
-//                    .build());
 
-            try {
-                this.emailService.sendHtmlMessage(userAccount.getEmailAddress(), "Password Reset", "Your password has been reset.", "Please login with your new password.", "https://zplatform.s2s.rw", "Start now");
-            } catch (Exception e) {
-                log.info("Email not sent");
-                e.printStackTrace();
-            }
+            this.emailService.sendHtmlMessage(userAccount.getEmailAddress(), "Password Reset", "Your password has been reset.", "Please login with your new password.", null, "Continue to login");
+
 
             return userAccount;
 
@@ -455,35 +448,15 @@ public class UserServiceImpl implements IUserService {
         if(status == EUserStatus.ADMIN_LOCKED){
             userAccount.setAccountLocked(true);
             authenticationService.invalidateUserLogin(userAccount);
-            String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-//            notificationService.sendNotification(NotificationPayload.builder()
-//                    .notificationType(NotificationType.EMAIL)
-//                    .destinations(List.of(userAccount.getEmailAddress()))
-//                    .subject("Your account has been locked!")
-//                    .templatePayload(
-//                            TemplatePayload.builder()
-//                                    .templateName(EmailTemplate.ACCOUNT_LOCKED)
-//                                    .data(Map.of( "doneAt", now))
-//                                    .build())
-//                    .build());
+            this.emailService.sendHtmlMessage(userAccount.getEmailAddress(), "Account Locked", "Your account has been locked.", "Please contact the admin for more information.", null, "Contact Admin");
         }
 
         if(status == EUserStatus.INACTIVE){
             userAccount.setAccountEnabled(false);
             authenticationService.invalidateUserLogin(userAccount);
-            String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
 
-//            notificationService.sendNotification(NotificationPayload.builder()
-//                    .notificationType(NotificationType.EMAIL)
-//                    .destinations(List.of(userAccount.getEmailAddress()))
-//                    .subject("Your account has been deactivated!")
-//                    .templatePayload(
-//                            TemplatePayload.builder()
-//                                    .templateName(EmailTemplate.ACCOUNT_DISABLED)
-//                                    .data(Map.of( "doneAt", now))
-//                                    .build())
-//                    .build());
+            this.emailService.sendHtmlMessage(userAccount.getEmailAddress(), "Account Deactivated", "Your account has been deactivated.", "Please contact the admin for more information.", null, "Contact Admin");
         }
 
          userAccount=this.userRepository.save(userAccount);
@@ -521,6 +494,8 @@ public class UserServiceImpl implements IUserService {
             CustomUserDTO userDTO = this.jwtService.extractLoggedInUser();
             UserAudit audit = new UserAudit(userToUnlock, EAuditType.ACTIVATE , userDTO.getId(), userDTO.getFullNames(), "LOCK_USER", "User is unlocked", null);
             this.userAuditRepository.save(audit);
+
+            this.emailService.sendHtmlMessage(userToUnlock.getEmailAddress(), "Account Unlocked", "Your account has been unlocked.", "Please login to continue.", null, "Continue to login");
         }else{
             throw new BadRequestAlertException("exceptions.badRequest.invalidStatus");
         }

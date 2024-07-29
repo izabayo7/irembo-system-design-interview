@@ -23,4 +23,6 @@ public class UpdateAccountVerificationStatusDTO {
     private UUID userId;
     @NotNull
     private EVerificationStatus verificationStatus;
+
+    private String rejectionReason;
 }

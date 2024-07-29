@@ -18,15 +18,15 @@ public interface IAuthenticationService {
 
     void invalidateUserLogin(UserAccount userAccount);
 
-    LoginTokenResponseDTO signInToken(LoginRequest request) throws Exception;
+    LoginResponseDTO signInToken(LoginTokenRequestDTO request) throws Exception;
 
-    VerifyTokenResponseDTO verifyToken(LoginTokenResponseDTO request) throws Exception;
+    VerifyTokenResponseDTO verifyToken(LoginTokenRequestDTO request) throws Exception;
 
     UserAccount getAuthenticatedUser(String token) throws ResourceNotFoundException;
 
     String initiateForgotPassword(ForgotPasswordDTO forgotPassword) throws  ResourceNotFoundException;
 
-    boolean verifyOTP(VerifyOtpDTO verifyOtp) throws ResourceNotFoundException;
+    LoginResponseDTO verifyOTP(VerifyOtpDTO verifyOtp) throws Exception;
 
     UserAccount verifyUserOwnership(UUID userId) throws ResourceNotFoundException;
 }

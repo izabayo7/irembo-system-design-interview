@@ -1,6 +1,7 @@
 package rw.companyz.useraccountms.services.impl;
 
 import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,10 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-import rw.companyz.useraccountms.services.IEmailService;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import jakarta.mail.internet.MimeMessage;
+import rw.companyz.useraccountms.services.IEmailService;
 
 @Service
 @RequiredArgsConstructor
@@ -21,24 +21,40 @@ public class EmailServiceImpl implements IEmailService {
     @Value("${spring.mail.username}")
     private String from;
 
+    @Value("${frontend.url}")
+    private String frontendURL;
+
     @Autowired
     private JavaMailSender mailSender;
 
     @Autowired
     private TemplateEngine templateEngine;
 
-    public void sendHtmlMessage(String to, String subject, String header, String text, String c2aLink, String c2aButton) throws MessagingException {
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+    public void sendHtmlMessage(String to, String subject, String header, String text, String c2aLink, String c2aButton) {
 
-        helper.setFrom(from);
-        helper.setTo(to);
-        helper.setSubject(subject);
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        String htmlContent = generateEmailContent(header, text, c2aLink, c2aButton);
-        helper.setText(htmlContent, true);
+            helper.setFrom(from);
+            helper.setTo(to);
+            helper.setSubject(subject);
 
-        mailSender.send(message);
+            if (c2aLink == null) {
+                c2aLink = "#";
+            } else {
+                c2aLink = frontendURL + c2aLink;
+            }
+
+            String htmlContent = generateEmailContent(header, text, c2aLink, c2aButton);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+        } catch (MessagingException e) {
+            log.error("Failed to send email to: {}", to);
+
+            // TODO: improve this to keep track of the failed emails and retry sending them later
+        }
     }
 
     public String generateEmailContent(String header, String text, String c2aLink, String c2aButton) {
@@ -50,5 +66,6 @@ public class EmailServiceImpl implements IEmailService {
 
         return templateEngine.process("email-template", context);
     }
+
 
 }

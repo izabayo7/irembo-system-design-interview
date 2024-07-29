@@ -109,6 +109,8 @@ public class UserAccount extends Auditable {
 
     private boolean isAccountLocked;
 
+    private boolean mfaEnabled = true;
+
     @JsonIgnore
     private String otp;
 

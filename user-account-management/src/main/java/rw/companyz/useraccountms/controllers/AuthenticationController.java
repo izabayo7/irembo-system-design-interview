@@ -31,10 +31,7 @@ public class AuthenticationController extends BaseController {
 
     @PostMapping("/signin")
     public ResponseEntity<LoginResponseDTO> signin(
-            @RequestBody LoginRequest request,
-            @RequestHeader(value = "User-Agent", required = false) String userAgent,
-            @RequestHeader(value = "Geolocation", required = false) String geolocation,
-            @RequestHeader(value = "Device-Type", required = false) String deviceType
+            @RequestBody LoginRequest request
     ) throws ResourceNotFoundException {
         return ResponseEntity.ok(authenticationService.signin(request));
     }
@@ -46,14 +43,14 @@ public class AuthenticationController extends BaseController {
     }
 
     @PostMapping("/signInToken")
-    public ResponseEntity<LoginTokenResponseDTO> signInToken(
-            @RequestBody LoginRequest request) throws Exception {
+    public ResponseEntity<LoginResponseDTO> signInToken(
+            @Valid @RequestBody LoginTokenRequestDTO request) throws Exception {
         return ResponseEntity.ok(authenticationService.signInToken(request));
     }
 
     @PostMapping("/verifyToken")
     public ResponseEntity<VerifyTokenResponseDTO> verifyToken(
-            @RequestBody LoginTokenResponseDTO request) throws Exception {
+            @Valid @RequestBody LoginTokenRequestDTO request) throws Exception {
         return ResponseEntity.ok(authenticationService.verifyToken(request));
     }
 
@@ -63,7 +60,7 @@ public class AuthenticationController extends BaseController {
     }
 
     @PostMapping("/verifyOTP")
-    public ResponseEntity<ApiResponse<Boolean>> verifyOtp(@RequestBody VerifyOtpDTO request) throws ResourceNotFoundException {
+    public ResponseEntity<ApiResponse<LoginResponseDTO>> verifyOtp(@RequestBody VerifyOtpDTO request) throws Exception {
         return ResponseEntity.ok(new ApiResponse<>(authenticationService.verifyOTP(request), "", HttpStatus.OK));
     }
 
