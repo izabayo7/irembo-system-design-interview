@@ -200,6 +200,10 @@ public class UserServiceImpl implements IUserService {
             throw new BadRequestAlertException("exceptions.badRequest.verificationAlreadySubmitted");
         }
 
+        Optional<UserAccount> duplicate = this.userRepository.findByNidOrPassport(dto.getNidOrPassport());
+        if (duplicate.isPresent())
+            throw new DuplicateRecordException("User", "nidOrPassport", dto.getNidOrPassport());
+
         File file = this.fileService.create(_file);
 
         userAccount.setNidOrPassport(dto.getNidOrPassport());

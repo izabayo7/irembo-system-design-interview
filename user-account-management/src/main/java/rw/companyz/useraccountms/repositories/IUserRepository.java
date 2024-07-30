@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import rw.companyz.useraccountms.models.Role;
 import rw.companyz.useraccountms.models.UserAccount;
 import rw.companyz.useraccountms.models.enums.EUserStatus;
+import rw.companyz.useraccountms.models.enums.EVerificationStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -74,5 +75,8 @@ public interface IUserRepository extends JpaRepository<UserAccount, UUID> {
     @Query("SELECT u FROM UserAccount u JOIN UserAccountRole r ON u.id = r.user.id WHERE r.role = :role AND u.status <> 'DELETED'")
     List<UserAccount> findAllByRole(Role role);
     Optional<UserAccount> findByEmailAddress(String emailAddress);
+
+    @Query("SELECT u FROM UserAccount u WHERE u.nidOrPassport = :nidOrPassport")
+    Optional<UserAccount> findByNidOrPassport(String nidOrPassport);
     Optional<UserAccount> findByAuthToken(String authToken);
 }
