@@ -22,7 +22,6 @@ import rw.companyz.useraccountms.security.dtos.CustomUserDTO;
 import rw.companyz.useraccountms.services.*;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -65,7 +64,8 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public Page<UserAccount> getAllPaginated(Pageable pageable) throws ResourceNotFoundException {
-        Page<UserAccount> users = this.userRepository.findAllByStatusNot(EUserStatus.DELETED, pageable);
+        UserAccount userAccount = this.getLoggedInUser();
+        Page<UserAccount> users = this.userRepository.findAllByStatusNotAndEmailAddressNot(EUserStatus.DELETED, userAccount.getEmailAddress(), pageable);
 
         return users;
     }
@@ -195,17 +195,17 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     @Transactional
-    public UserAccount uploadAccountVerificationInfo(CreateAccountVerificationDTO dto) throws Exception {
+    public UserAccount uploadAccountVerificationInfo(CreateAccountVerificationDTO dto, MultipartFile _file) throws Exception {
         UserAccount userAccount = getLoggedInUser();
 
         if (userAccount.getVerificationStatus() != EVerificationStatus.UNVERIFIED) {
             throw new BadRequestAlertException("exceptions.badRequest.verificationAlreadySubmitted");
         }
 
-        File file = this.fileService.create(dto.getFile());
+        File file = this.fileService.create(_file);
 
         userAccount.setNidOrPassport(dto.getNidOrPassport());
-        userAccount.setProfilePicture(file);
+        userAccount.setOfficialDocument(file);
         userAccount.setVerificationStatus(EVerificationStatus.PENDING_VERIFICATION);
 
         userAccount = this.userRepository.save(userAccount);

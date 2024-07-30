@@ -17,9 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Validated
 public class CreateAccountVerificationDTO {
     @NotNull
-    private MultipartFile file;
-
-    @NotNull
     @NotBlank
     @Length(min = 6, max = 16)
     private String nidOrPassport;

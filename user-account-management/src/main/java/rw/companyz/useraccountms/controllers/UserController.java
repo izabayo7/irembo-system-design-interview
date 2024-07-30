@@ -13,6 +13,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import rw.companyz.useraccountms.annotations.VerifyUser;
 import rw.companyz.useraccountms.exceptions.BadRequestException;
 import rw.companyz.useraccountms.exceptions.DuplicateRecordException;
@@ -141,8 +142,8 @@ public class UserController extends BaseController {
 
     @Operation(summary = "Upload account verification information", description = "Privileges: none \n Note: only the owner of the profile can upload the account verification information")
     @PutMapping(value = "/upload/verification", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
-    public ResponseEntity<ApiResponse<UserAccount>> uploadProfileVerification(@ModelAttribute CreateAccountVerificationDTO dto) throws Exception {
-        UserAccount userAccount = this.userService.uploadAccountVerificationInfo(dto);
+    public ResponseEntity<ApiResponse<UserAccount>> uploadProfileVerification(@ModelAttribute CreateAccountVerificationDTO dto, @RequestParam(value = "file", required = true) MultipartFile file) throws Exception {
+        UserAccount userAccount = this.userService.uploadAccountVerificationInfo(dto, file);
         return new ResponseEntity<>(new ApiResponse<>(userAccount, localize("responses.saveEntitySuccess"), HttpStatus.CREATED), HttpStatus.CREATED);
     }
 
