@@ -288,7 +288,7 @@ function Dashboard() {
                   <Pagination
                     totalItems={totalItems}
                     itemsPerPage={pageSize}
-                    currentPage={currentPage}
+                    currentPage={currentPage + 1}
                     onPageChange={(page) => handlePageChange(page)}
                     onItemsPerPageChange={(size) => handlePageSizeChange(size)}
                   />
