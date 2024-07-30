@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
   frontend:
@@ -19,20 +19,20 @@ services:
     image: izabayo7/user-account-mis-api:latest
     build:
       context: ./user-account-management/
-      args:
-        - FILE_UPLOAD_PATH=$FILE_UPLOAD_PATH
     restart: always
+    ports:
+      - 5000:8080
     depends_on:
       - db
     env_file:
       - .env
     volumes:
-      - backend:${FILE_UPLOAD_PATH}
+      - backend:/opt/useraccountms
   db:
     image: izabayo7/user-account-mis-db:latest
     build: ./deploy/db/
     ports:
-      - 5432:5432
+      - 5433:5432
     restart: always
     env_file:
       - .env
@@ -45,13 +45,11 @@ services:
     mem_limit: 128m
     hostname: nginx
     ports:
-      - 80:80
+      - 3080:80
     depends_on:
       - frontend
       - backend
 
 volumes:
   postgres:
-    name: nest-prisma-docker-db
   backend:
-    name: nest-docker-storage-backend
