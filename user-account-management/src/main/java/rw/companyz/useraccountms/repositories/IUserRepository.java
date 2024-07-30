@@ -16,7 +16,9 @@ import java.util.UUID;
 @Repository
 public interface IUserRepository extends JpaRepository<UserAccount, UUID> {
     Page<UserAccount> findAllByStatus(EUserStatus status, Pageable pageable);
-    Page<UserAccount> findAllByStatusNotAndEmailAddressNot(EUserStatus status, String email, Pageable pageable);
+
+    @Query("SELECT u FROM UserAccount u WHERE u.status <> :status AND u.emailAddress <> :email AND (:verificationStatus IS NULL OR u.verificationStatus = :verificationStatus)")
+    Page<UserAccount> findAllByStatusNotAndEmailAddressNot(EUserStatus status, String email, EVerificationStatus verificationStatus, Pageable pageable);
 
     @Query("""
             SELECT u FROM UserAccount u

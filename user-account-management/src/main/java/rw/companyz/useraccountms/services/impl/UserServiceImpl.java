@@ -63,11 +63,10 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public Page<UserAccount> getAllPaginated(Pageable pageable) throws ResourceNotFoundException {
+    public Page<UserAccount> getAllPaginated(Pageable pageable, EVerificationStatus verificationStatus) throws ResourceNotFoundException {
         UserAccount userAccount = this.getLoggedInUser();
-        Page<UserAccount> users = this.userRepository.findAllByStatusNotAndEmailAddressNot(EUserStatus.DELETED, userAccount.getEmailAddress(), pageable);
 
-        return users;
+        return this.userRepository.findAllByStatusNotAndEmailAddressNot(EUserStatus.DELETED, userAccount.getEmailAddress(), verificationStatus, pageable);
     }
 
     @Override
@@ -120,7 +119,6 @@ public class UserServiceImpl implements IUserService {
         if (duplicateEmailAddress.isPresent())
             throw new DuplicateRecordException("User", "emailAddress", dto.getEmailAddress());
 
-        // TODO: make this optional (normal users don't need roles)
         for (CreateUserRoleDTO roleId: dto.getRoleIds()) {
             this.roleService.getPureRole(roleId.getRoleId());
         }

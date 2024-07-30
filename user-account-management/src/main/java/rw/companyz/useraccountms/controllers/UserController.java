@@ -27,15 +27,14 @@ import rw.companyz.useraccountms.models.dtos.*;
 import rw.companyz.useraccountms.models.enums.EAttachStatus;
 import rw.companyz.useraccountms.models.enums.ELoginStatus;
 import rw.companyz.useraccountms.models.enums.EUserStatus;
+import rw.companyz.useraccountms.models.enums.EVerificationStatus;
 import rw.companyz.useraccountms.services.IFileService;
 import rw.companyz.useraccountms.services.IUserService;
 import rw.companyz.useraccountms.utils.Constants;
 
 import javax.validation.Valid;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 
@@ -53,9 +52,11 @@ public class UserController extends BaseController {
     @GetMapping(value = "")
     public ResponseEntity<ApiResponse<Page<UserAccount>>> getAll(
             @RequestParam(value = "page", defaultValue = Constants.DEFAULT_PAGE_NUMBER) int page,
-            @RequestParam(value = "limit", defaultValue = Constants.DEFAULT_PAGE_SIZE) int limit) throws ResourceNotFoundException {
+            @RequestParam(value = "limit", defaultValue = Constants.DEFAULT_PAGE_SIZE) int limit,
+            @RequestParam(value = "verificationStatus", required = false) EVerificationStatus verificationStatus
+            ) throws ResourceNotFoundException {
         Pageable pageable = (Pageable) PageRequest.of(page-1, limit, Sort.Direction.DESC,"id");
-        Page<UserAccount> users = this.userService.getAllPaginated(pageable);
+        Page<UserAccount> users = this.userService.getAllPaginated(pageable, verificationStatus);
 
         return ResponseEntity.ok(
                 new ApiResponse<>(users, localize("responses.getListSuccess"), HttpStatus.OK)

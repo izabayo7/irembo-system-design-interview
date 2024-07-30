@@ -13,6 +13,7 @@ import rw.companyz.useraccountms.models.audits.UserAudit;
 import rw.companyz.useraccountms.models.dtos.*;
 import rw.companyz.useraccountms.models.enums.ELoginStatus;
 import rw.companyz.useraccountms.models.enums.EUserStatus;
+import rw.companyz.useraccountms.models.enums.EVerificationStatus;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -22,7 +23,7 @@ import java.util.UUID;
 
 public interface IUserService {
     Page<UserAccount> searchAll(String q, UUID roleId, EUserStatus status, ELoginStatus loginStatus, Pageable pageable) throws ResourceNotFoundException;
-    Page<UserAccount> getAllPaginated(Pageable pageable) throws ResourceNotFoundException;
+    Page<UserAccount> getAllPaginated(Pageable pageable, EVerificationStatus verificationStatus) throws ResourceNotFoundException;
 
     Page<UserAccount> getAllByUserStatus(EUserStatus status, Pageable pageable) throws ResourceNotFoundException;
 
