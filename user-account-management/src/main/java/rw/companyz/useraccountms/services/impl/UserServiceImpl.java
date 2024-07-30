@@ -125,6 +125,9 @@ public class UserServiceImpl implements IUserService {
 
         UserAccount userAccount = new UserAccount(dto);
 
+        if (userAccount.getAge() < 13) // Assuming 13 is the minimum age
+            throw new BadRequestException("Age must be at least 13 years");
+
         userAccount.setPassword(passwordEncoder.encode(dto.getPassword()));
         userAccount.setCredentialsExpired(false);
         userAccount.setCredentialsExpiryDate(LocalDateTime.now().plusMonths(12).toString());

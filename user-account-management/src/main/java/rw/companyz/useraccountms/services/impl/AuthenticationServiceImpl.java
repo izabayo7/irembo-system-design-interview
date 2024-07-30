@@ -15,7 +15,6 @@ import rw.companyz.useraccountms.fileHandling.File;
 import rw.companyz.useraccountms.models.*;
 import rw.companyz.useraccountms.models.dtos.CreateUserDTO;
 import rw.companyz.useraccountms.models.dtos.ForgotPasswordDTO;
-import rw.companyz.useraccountms.models.dtos.SignupDTO;
 import rw.companyz.useraccountms.models.dtos.VerifyOtpDTO;
 import rw.companyz.useraccountms.models.enums.ELoginStatus;
 import rw.companyz.useraccountms.models.enums.EOTPStatus;

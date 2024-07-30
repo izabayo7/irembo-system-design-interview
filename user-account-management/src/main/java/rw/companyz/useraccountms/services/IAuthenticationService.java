@@ -2,13 +2,10 @@ package rw.companyz.useraccountms.services;
 
 
 import org.springframework.web.multipart.MultipartFile;
-import rw.companyz.useraccountms.exceptions.BadRequestException;
-import rw.companyz.useraccountms.exceptions.DuplicateRecordException;
 import rw.companyz.useraccountms.exceptions.ResourceNotFoundException;
 import rw.companyz.useraccountms.models.UserAccount;
 import rw.companyz.useraccountms.models.dtos.CreateUserDTO;
 import rw.companyz.useraccountms.models.dtos.ForgotPasswordDTO;
-import rw.companyz.useraccountms.models.dtos.SignupDTO;
 import rw.companyz.useraccountms.models.dtos.VerifyOtpDTO;
 import rw.companyz.useraccountms.security.dtos.*;
 
