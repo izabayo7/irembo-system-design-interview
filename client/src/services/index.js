@@ -66,6 +66,14 @@ class AppServices {
     return axios.get(`${API_URL}/users?page=${currentPage}&limit=${itemsPerPage}${verificationStatus == null ? "" : `&verificationStatus=${verificationStatus}`}`);
   }
 
+  getPrivileges(currentPage, itemsPerPage) {
+    return axios.get(`${API_URL}/privileges/paginated?page=${currentPage}&limit=${itemsPerPage}`);
+  }
+
+  getRoles(currentPage, itemsPerPage) {
+    return axios.get(`${API_URL}/roles/paginated?page=${currentPage}&limit=${itemsPerPage}`);
+  }
+
 }
 
 export default new AppServices();

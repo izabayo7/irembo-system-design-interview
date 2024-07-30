@@ -28,7 +28,7 @@ function Dashboard() {
   const [nidOrPassport, setNidOrPassport] = useState("");
   const [file, setFile] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
   const [rejectionReason, setRejectionReason] = useState("");
@@ -68,7 +68,7 @@ function Dashboard() {
 
   useEffect(() => {
     if (isLoggedIn) {
-      fetchUsers(currentPage, pageSize);
+      fetchUsers(currentPage + 1, pageSize);
     }
   }, [isLoggedIn]);
 
@@ -142,13 +142,10 @@ function Dashboard() {
     if (rejectionReason.length === 0) {
       return toast.error("Rejection reason is required");
     }
-
-    setVerificationStatus("UNVERIFIED");
     updateVerificationStatus(e, "UNVERIFIED");
   };
 
   const verify = (e) => {
-    setVerificationStatus("VERIFIED");
     updateVerificationStatus(e, "VERIFIED");
   };
 

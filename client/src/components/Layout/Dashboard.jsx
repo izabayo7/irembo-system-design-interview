@@ -11,6 +11,7 @@ import {
   logout,
   loadUser,
   selectIsLoggedIn,
+  hasPrivilege,
 } from "../../store/modules/authSlice";
 import Modal from "../Modal";
 import toast from "react-hot-toast";
@@ -39,6 +40,14 @@ const DashboardLayout = ({ children }) => {
   const user = useSelector(selectUser);
   const isLoggedIn = useSelector(selectIsLoggedIn);
   const navigate = useNavigate();
+
+  const [isDropDownOpen, setIsDropDownOpen] = useState(
+    useLocation().pathname.includes("data-management")
+  );
+
+  const toggleDropDown = () => {
+    setIsDropDownOpen(!isDropDownOpen);
+  };
 
   const handleLogout = () => {
     dispatch(logout());
@@ -179,6 +188,71 @@ const DashboardLayout = ({ children }) => {
                 />
                 <span className="menu-link">Home</span>
               </NavLink>
+
+              {hasPrivilege(user, "INITIATE_FLOW") ? (
+                <>
+                  <div className="link-item" onClick={toggleDropDown}>
+                    Data management
+                    <svg
+                      data-testid="dropdown-right-icon"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                      className={`${
+                        isDropDownOpen ? "" : "rotate-180"
+                      } transition-transform duration-300`}
+                    >
+                      <path
+                        d="M12.3552 9.52217L12.3552 9.52218L12.3587 9.52569L16.6412 13.7582C16.684 13.8051 16.7175 13.8598 16.7398 13.9192C16.7631 13.9811 16.7739 14.0469 16.7716 14.1129C16.7692 14.1789 16.7539 14.2438 16.7263 14.3039C16.6987 14.3639 16.6596 14.4179 16.611 14.4627L16.6044 14.4688L16.5981 14.4751C16.5514 14.5214 16.496 14.5581 16.435 14.583C16.3741 14.6078 16.3089 14.6205 16.2431 14.6201L16.2423 14.6201C16.1114 14.6195 15.986 14.5677 15.8929 14.4757C15.8927 14.4755 15.8925 14.4753 15.8923 14.4751L12.3537 10.9365L12.0002 10.583L11.6466 10.9365L8.10769 14.4755C8.10754 14.4756 8.10739 14.4758 8.10724 14.4759C8.01361 14.5688 7.88708 14.6209 7.75519 14.6209C7.6231 14.6209 7.49637 14.5686 7.40269 14.4755L7.40229 14.4751C7.35543 14.4286 7.31823 14.3733 7.29285 14.3124C7.26746 14.2514 7.25439 14.1861 7.25439 14.1201C7.25439 14.0541 7.26746 13.9887 7.29285 13.9278C7.31823 13.8668 7.35543 13.8115 7.40229 13.7651L7.4023 13.7651L7.40375 13.7636L11.6437 9.52362L11.6437 9.52362L11.6452 9.52217C11.6917 9.4753 11.747 9.43811 11.8079 9.41272C11.8688 9.38734 11.9342 9.37427 12.0002 9.37427C12.0662 9.37427 12.1316 9.38734 12.1925 9.41272C12.2534 9.43811 12.3087 9.4753 12.3552 9.52217Z"
+                        fill="black"
+                        className={`${
+                          isDropDownOpen ? "stroke-white" : "stroke-gray-400"
+                        }`}
+                      />
+                    </svg>
+                  </div>
+                  {isDropDownOpen ? (
+                    <ul className="border-l-2 border-gray-300 pl-3 ml-2 text-gray-400 capitalize font-medium text-sm cursor-pointer">
+                      <NavLink
+                        className={`link-item colored-link ${
+                          useLocation().pathname.includes("users")
+                            ? "active"
+                            : ""
+                        }`}
+                        to="/data-management/users"
+                      >
+                        <span className="menu-link">Users</span>
+                      </NavLink>
+                      <NavLink
+                        className={`link-item colored-link ${
+                          useLocation().pathname.includes("roles")
+                            ? "active"
+                            : ""
+                        }`}
+                        to="/data-management/roles"
+                      >
+                        <span className="menu-link">Roles</span>
+                      </NavLink>
+                      <NavLink
+                        className={`link-item colored-link ${
+                          useLocation().pathname.includes("privileges")
+                            ? "active"
+                            : ""
+                        }`}
+                        to="/data-management/privileges"
+                      >
+                        <span className="menu-link">privileges</span>
+                      </NavLink>
+                    </ul>
+                  ) : (
+                    ""
+                  )}{" "}
+                </>
+              ) : (
+                ""
+              )}
             </li>
           </ul>
           <div
