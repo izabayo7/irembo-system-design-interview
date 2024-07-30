@@ -62,8 +62,8 @@ class AppServices {
     return axios.post(`${API_URL}/auth/signInToken`, body);
   }
 
-  getUsers(currentPage, itemsPerPage) {
-    return axios.get(`${API_URL}/users?page=${currentPage}&limit=${itemsPerPage}`);
+  getUsers(currentPage, itemsPerPage, verificationStatus) {
+    return axios.get(`${API_URL}/users?page=${currentPage}&limit=${itemsPerPage}${verificationStatus == null ? "" : `&verificationStatus=${verificationStatus}`}`);
   }
 
 }

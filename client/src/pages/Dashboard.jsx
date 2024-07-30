@@ -14,8 +14,10 @@ import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUsers, setUsers, updateUser } from "../store/modules/userSlice";
 import Modal from "../components/Modal";
-import React from "react";
 import Pagination from "../components/Pagination";
+
+import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
+import "react-tabs/style/react-tabs.css";
 
 function Dashboard() {
   const isLoggedIn = useSelector(selectIsLoggedIn);
@@ -29,8 +31,8 @@ function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
-  const [verificationStatus, setVerificationStatus] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
+  const [activeTab, setActiveTab] = useState(0);
 
   const handlePageChange = (newPage) => {
     if (newPage < 1) newPage = 1;
@@ -47,7 +49,15 @@ function Dashboard() {
   };
 
   const fetchUsers = (currentPage, pageSize) => {
-    AppServices.getUsers(currentPage, pageSize).then((response) => {
+    let verificationStatus = null;
+    if (activeTab == 1) verificationStatus = "PENDING_VERIFICATION";
+    if (activeTab == 2) verificationStatus = "VERIFIED";
+
+    AppServices.getUsers(
+      currentPage,
+      pageSize,
+      verificationStatus
+    ).then((response) => {
       if (response.data) {
         dispatch(setUsers(response.data.data));
         setCurrentPage(response.data.data.number);
@@ -61,6 +71,10 @@ function Dashboard() {
       fetchUsers(currentPage, pageSize);
     }
   }, [isLoggedIn]);
+
+  useEffect(() => {
+    fetchUsers(currentPage+1, pageSize);
+  }, [activeTab]);
 
   const childRef = useRef(null);
 
@@ -190,9 +204,21 @@ function Dashboard() {
               : ""}
           </div>
           {hasPrivilege(user, "RETRIEVE_USER") ? (
-            <div className="md:flex">
-              <div className="w-full">
-                {/* <div className="md:flex">
+            <div className="">
+              <Tabs
+                onSelect={(index, last) => {
+                  setActiveTab(index);
+                }}
+              >
+                <TabList>
+                  <Tab>ALL</Tab>
+                  <Tab>PENDING</Tab>
+                  <Tab>VERIFIED</Tab>
+                </TabList>
+              </Tabs>
+              <div className="md:flex">
+                <div className="w-full">
+                  {/* <div className="md:flex">
               <div className="flex ml-auto mr-6">
                 <div className="mt-2 ml-4">
                   <input
@@ -208,32 +234,32 @@ function Dashboard() {
                 </div>
               </div>
             </div> */}
-                <div className="table w-full">
-                  <table>
-                    <thead>
-                      <tr
-                        className="
+                  <div className="table w-full">
+                    <table>
+                      <thead>
+                        <tr
+                          className="
               flex flex-col flex-no
               wrap
               table-row
               rounded-l-lg rounded-none
               mb-2 mb-0
             "
-                      >
-                        <th>Names</th>
-                        <th>Email</th>
-                        <th>Gender</th>
-                        <th>Marital Status</th>
-                        <th>Age</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="sm:flex-1 sm:flex-none">
-                      {users.content?.map((user) => {
-                        return (
-                          <tr
-                            key={user.id}
-                            className="
+                        >
+                          <th>Names</th>
+                          <th>Email</th>
+                          <th>Gender</th>
+                          <th>Marital Status</th>
+                          <th>Age</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="sm:flex-1 sm:flex-none">
+                        {users.content?.map((user) => {
+                          return (
+                            <tr
+                              key={user.id}
+                              className="
               sm:flex
               sm:flex-col
               sm:flex-no
@@ -244,54 +270,52 @@ function Dashboard() {
               main-header
               sm:header tr
                           "
-                          >
-                            <td className="flex">
-                              {user.firstName} {user.lastName}{" "}
-                              {user.verificationStatus === "VERIFIED" && (
-                                <img
-                                  src={verified}
-                                  className="ml-2"
-                                  style={{ width: "15px" }}
-                                  alt="verified"
-                                />
-                              )}
-                            </td>
-                            <td>{user.emailAddress}</td>
-                            <td>{user.gender}</td>
-                            <td>{user.maritalStatus}</td>
-                            <td>
-                              {parseInt(new Date().getFullYear()) -
-                                parseInt(
-                                  new Date(user.dateOfBirth).getFullYear()
+                            >
+                              <td className="flex">
+                                {user.firstName} {user.lastName}{" "}
+                                {user.verificationStatus === "VERIFIED" && (
+                                  <img
+                                    src={verified}
+                                    className="ml-2"
+                                    style={{ width: "15px" }}
+                                    alt="verified"
+                                  />
                                 )}
-                            </td>
-                            <td className="pt-1 p-3">
-                              <div className="flex">
-                                <div
-                                  onClick={() => {
-                                    setSelectedUser({ ...user });
-                                    toggleModal();
-                                  }}
-                                  className="status cursor-pointer rounded"
-                                >
-                                  View
+                              </td>
+                              <td>{user.emailAddress}</td>
+                              <td>{user.gender}</td>
+                              <td>{user.maritalStatus}</td>
+                              <td>{user.age}</td>
+                              <td className="pt-1 p-3">
+                                <div className="flex">
+                                  <div
+                                    onClick={() => {
+                                      setSelectedUser({ ...user });
+                                      toggleModal();
+                                    }}
+                                    className="status cursor-pointer rounded"
+                                  >
+                                    View
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-                <div className=" w-11/12 mt-4">
-                  <Pagination
-                    totalItems={totalItems}
-                    itemsPerPage={pageSize}
-                    currentPage={currentPage + 1}
-                    onPageChange={(page) => handlePageChange(page)}
-                    onItemsPerPageChange={(size) => handlePageSizeChange(size)}
-                  />
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className=" w-11/12 mt-4">
+                    <Pagination
+                      totalItems={totalItems}
+                      itemsPerPage={pageSize}
+                      currentPage={currentPage + 1}
+                      onPageChange={(page) => handlePageChange(page)}
+                      onItemsPerPageChange={(size) =>
+                        handlePageSizeChange(size)
+                      }
+                    />
+                  </div>
                 </div>
               </div>
             </div>
