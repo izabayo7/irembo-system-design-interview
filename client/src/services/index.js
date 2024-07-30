@@ -33,12 +33,17 @@ class AppServices {
     return axios.delete(`${API_URL}/users`);
   }
 
-  uploadIdentificationDocuments(body, id) {
-    return axios.put(`${API_URL}/verification/` + id, body);
+  uploadIdentificationDocuments(body) {
+    return axios.put(`${API_URL}/users/upload/verification`, body);
   }
 
-  verifyAccount(id) {
-    return axios.post(`${API_URL}/verification/${id}`);
+  verifyAccount(body) {
+    return axios.put(`${API_URL}/users/verificationStatus
+`, body);
+  }
+
+  resetVerificationStatus(id) {
+    return axios.put(`${API_URL}/users/resetVerificationStatus/${id}`);
   }
 
   setPassword(id, newPassword) {

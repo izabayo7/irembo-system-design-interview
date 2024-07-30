@@ -3,16 +3,8 @@ import { useEffect, useState, useRef } from 'react'
 import verified from '../assets/images/verified.svg'
 import '../assets/scss/accountView.scss'
 
-function AccountView({ user, handleClick, role }) {
-  const [accountInfo, setAccountInfo] = useState({});
+function AccountView({ user, handleClick, isOwner }) {
   const API_URL = import.meta.env.VITE_API_URL;
-  const token = JSON.parse(localStorage.getItem("user") || "{}").accessToken;
-  useEffect(
-    () => {
-      setAccountInfo(user);
-    }
-    , [user]
-  )
 
   return (
     <div className="accountView">
@@ -20,51 +12,47 @@ function AccountView({ user, handleClick, role }) {
         <div
           className="profilePhoto"
           style={{
-            backgroundImage: `url(${API_URL}/users/profile/${accountInfo.profilePhoto}?token=${token})`,
+            backgroundImage: `url(${API_URL}/users/raw/${user.profilePicture.name})`,
           }}
         ></div>
         <div className="details ml-8">
           <div className="names flex">
-            {accountInfo.firstName} {accountInfo.lastName}
-            {accountInfo.accountVerification?.verificationStatus ===
+            {user.firstName} {user.lastName}
+            {user.verificationStatus ===
               "VERIFIED" && (
               <img src={verified} className="ml-2" alt="verified" />
             )}
           </div>
-          <div className="other-details">{accountInfo.emailAddress}</div>
+          <div className="other-details">{user.emailAddress}</div>
           <div className="flex">
-            <div className="other-details">{accountInfo.maritalStatus}</div>
-            <div className="other-details ml-auto">{accountInfo.gender}</div>
+            <div className="other-details">{user.maritalStatus}</div>
+            <div className="other-details ml-auto">{user.gender}</div>
           </div>
           <div className="flex">
             <div className="other-details">
-              {new Date(accountInfo.dateOfBirth).toLocaleDateString()}
+              {new Date(user.dateOfBirth).toLocaleDateString()}
             </div>
             <div className="other-details ml-auto">
-              {parseInt(new Date().getFullYear()) -
-                parseInt(new Date(accountInfo.dateOfBirth).getFullYear())}{" "}
-              years
+              {user.age + " "} 
+              years 
             </div>
           </div>
-          <div className="flex">
-            <div className="other-details">{accountInfo.nationality}</div>
-          </div>
           <div className="other-details nid">
-            {accountInfo.accountVerification?.nidOrPassport}
+            {user.nidOrPassport}
           </div>
         </div>
       </div>
-      {accountInfo.accountVerification?.verificationStatus !== "UNVERIFIED" ? (
+      {user.verificationStatus !== "UNVERIFIED" ? (
         <div>
           <div className="names">User Identification document</div>
           <div
             className="identificationDoc"
             style={{
-              backgroundImage: `url(${API_URL}/verification/document/${accountInfo.accountVerification?.officialDocument}?token=${token})`,
+              backgroundImage: `url(${API_URL}/users/raw/${encodeURIComponent(user.officialDocument.name)})`,
             }}
           ></div>
         </div>
-      ) : role !== "ADMIN" ? (
+      ) : user.roles.length == 0 && isOwner ? (
         <div>
           <button onClick={handleClick}>
             Upload identification infromation

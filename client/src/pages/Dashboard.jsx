@@ -29,6 +29,8 @@ function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
+  const [verificationStatus, setVerificationStatus] = useState("");
+  const [rejectionReason, setRejectionReason] = useState("");
 
   const handlePageChange = (newPage) => {
     if (newPage < 1) newPage = 1;
@@ -49,7 +51,6 @@ function Dashboard() {
       if (response.data) {
         dispatch(setUsers(response.data.data));
         setCurrentPage(response.data.data.number);
-        setTotalPages(response.data.data.totalPages);
         setTotalItems(response.data.data.totalElements);
       }
     });
@@ -72,19 +73,19 @@ function Dashboard() {
     setFile(e.target.files[0]);
   };
 
-  const verifyAccount = (e) => {
+  const updateVerificationStatus = (e, newStatus) => {
     e.preventDefault();
 
     toast.promise(
-      AppServices.verifyAccount(selectedUser.accountVerification.id),
+      AppServices.verifyAccount({
+        userId: selectedUser.id,
+        verificationStatus: newStatus,
+        rejectionReason,
+      }),
       {
         loading: "Verifying User ...",
         success: (response) => {
-          selectedUser.accountVerification = {
-            ...selectedUser.accountVerification,
-            verificationStatus: "VERIFIED",
-          };
-          dispatch(updateUser(selectedUser));
+          fetchUsers(currentPage + 1, pageSize);
           toggleModal();
           return "User verified successfully";
         },
@@ -95,21 +96,53 @@ function Dashboard() {
               error.response.data.message) ||
             error.message ||
             error.toString();
-          if (message.includes("required pattern"))
-            if (message.includes("chasisNumber"))
-              return "invalid chasisNumber number";
-            else return "invalid manufactureCompany";
           return message;
         },
       }
     );
   };
 
+  const reset = (e) => {
+    e.preventDefault();
+
+    toast.promise(AppServices.resetVerificationStatus(selectedUser.id), {
+      loading: "Resetting verificationStatus ...",
+      success: (response) => {
+        fetchUsers(currentPage + 1, pageSize);
+        toggleModal();
+        return "User resetted successfully";
+      },
+      error: (error) => {
+        let message =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
+        return message;
+      },
+    });
+  };
+
+  const reject = (e) => {
+    if (rejectionReason.length === 0) {
+      return toast.error("Rejection reason is required");
+    }
+
+    setVerificationStatus("UNVERIFIED");
+    updateVerificationStatus(e, "UNVERIFIED");
+  };
+
+  const verify = (e) => {
+    setVerificationStatus("VERIFIED");
+    updateVerificationStatus(e, "VERIFIED");
+  };
+
   const handleRegister = (e) => {
     e.preventDefault();
 
     if (nidOrPassport.length === 0) {
-      return toast.error("NID of passport  is required");
+      return toast.error("NID or passport  is required");
     }
 
     if (!file) {
@@ -120,38 +153,29 @@ function Dashboard() {
     setSubmitted(true);
 
     const formData = new FormData();
-    formData.append("officialDocument", file);
+    formData.append("file", file);
     formData.append("nidOrPassport", nidOrPassport);
 
-    toast.promise(
-      AppServices.uploadIdentificationDocuments(
-        formData,
-        user.accountVerification.id
-      ),
-      {
-        loading: "Submitting ...",
-        success: ({ data }) => {
-          toggleModal();
-          setSubmitted(false);
-          setUser({ ...user, accountVerification: data });
-          // set user with new stuff
-          return "Submitted successfully";
-        },
-        error: (error) => {
-          const message =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-          setSubmitted(false);
-          if (message.includes("required pattern"))
-            if (message.includes("phone")) return "invalid phone number";
-            else return "invalid nationalId";
-          return message;
-        },
-      }
-    );
+    toast.promise(AppServices.uploadIdentificationDocuments(formData), {
+      loading: "Submitting ...",
+      success: ({ data }) => {
+        toggleModal();
+        setSubmitted(false);
+        dispatch(setUser({ ...user, ...data.data }));
+        // set user with new data
+        return "Submitted successfully";
+      },
+      error: (error) => {
+        const message =
+          (error.response &&
+            error.response.data &&
+            error.response.data.message) ||
+          error.message ||
+          error.toString();
+        setSubmitted(false);
+        return message;
+      },
+    });
   };
 
   return (
@@ -161,7 +185,7 @@ function Dashboard() {
           <div className="title">
             {user.roles.length == 0
               ? "My account"
-              : user.role === "USER"
+              : hasPrivilege(user, "RETRIEVE_USER")
               ? "Users"
               : ""}
           </div>
@@ -271,9 +295,13 @@ function Dashboard() {
                 </div>
               </div>
             </div>
-          ) : user.role === "USER" ? (
+          ) : user.roles.length == 0 ? (
             <div className="md:flex justify-center">
-              <AccountView user={user} handleClick={toggleModal} />
+              <AccountView
+                user={user}
+                handleClick={toggleModal}
+                isOwner={true}
+              />
             </div>
           ) : (
             ""
@@ -286,7 +314,7 @@ function Dashboard() {
         children={
           <div>
             <div className="modal-title text-center my-10">Settings</div>
-            {user?.role === "ADMIN" ? (
+            {hasPrivilege(user, "RETRIEVE_USER") ? (
               <div
                 className="modal-body pt-14"
                 style={{
@@ -296,7 +324,13 @@ function Dashboard() {
                   justifyContent: "center",
                 }}
               >
-                {user && <AccountView user={selectedUser} role={user.role} />}
+                {user && (
+                  <AccountView
+                    user={selectedUser}
+                    role={user.role}
+                    isOwner={selectedUser?.id == user.id}
+                  />
+                )}
               </div>
             ) : (
               <div className="modal-body pt-14">
@@ -368,24 +402,64 @@ function Dashboard() {
               </div>
             )}
             <div className="modal-footer my-10">
-              {user?.role === "ADMIN" ? (
-                <div className="flex justify-center">
-                  <button className="cancel mr-9" onClick={toggleModal}>
-                    Close
-                  </button>
-                  {selectedUser?.accountVerification.verificationStatus !==
-                    "VERIFIED" &&
-                    selectedUser?.accountVerification.nidOrPassport && (
-                      <button onClick={verifyAccount}>Verify</button>
+              {hasPrivilege(user, "UPDATE_ACCOUNT_VERIFICATION") ? (
+                <div>
+                  {selectedUser?.verificationStatus ==
+                  "PENDING_VERIFICATION" ? (
+                    <div className="flex justify-center">
+                      <div className="ml-6 mb-4 w-fit justify-center">
+                        <label
+                          htmlFor="reject"
+                          className="block text-sm font-medium text-gray-700"
+                        >
+                          Rejection reason (required while rejecting)
+                        </label>
+                        <textarea
+                          onChange={(e) => {
+                            setRejectionReason(e.target.value || "");
+                          }}
+                          type="text"
+                          id="reject"
+                          className="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    ""
+                  )}
+
+                  <div className="flex justify-center">
+                    <button className="cancel mr-9" onClick={toggleModal}>
+                      Close
+                    </button>
+                    {selectedUser?.verificationStatus ==
+                    "PENDING_VERIFICATION" ? (
+                      selectedUser?.nidOrPassport && (
+                        <div className="flex">
+                          <button className="mr-2 danger" onClick={reject}>
+                            Reject
+                          </button>
+                          <button onClick={verify}>Verify</button>
+                        </div>
+                      )
+                    ) : selectedUser?.verificationStatus == "VERIFIED" &&
+                      hasPrivilege(user, "RESET_ACCOUNT_VERIFICATION") ? (
+                      <div className="flex">
+                        <button className="mr-2 danger" onClick={reset}>
+                          Reset
+                        </button>
+                      </div>
+                    ) : (
+                      ""
                     )}
+                  </div>
                 </div>
               ) : (
                 <div className="flex justify-center">
                   <button className="cancel mr-9" onClick={toggleModal}>
                     Cancel
                   </button>
-                  {user?.accountVerification?.verificationStatus !==
-                    "VERIFIED" && (
+                  {user?.verificationStatus !== "VERIFIED" && (
                     <button onClick={handleRegister}>Submit</button>
                   )}
                 </div>

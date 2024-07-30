@@ -208,13 +208,12 @@ const DashboardLayout = ({ children }) => {
               ""
             )}
             {user?.profilePicture ? (
-              <img
-                src={`${API_URL}/users/raw/${user.profilePicture.name}`}
-                alt="profile"
-                className="rounded-full"
-                height={50}
-                width={50}
-              />
+              <div
+                className="profilePhoto"
+                style={{
+                  backgroundImage: `url(${API_URL}/users/raw/${user.profilePicture.name})`,
+                }}
+              ></div>
             ) : (
               <div className="avatar">
                 <div className="mt-2">

@@ -83,6 +83,10 @@
     height: 60px;
     display: flex;
 
+    &.danger{
+      background: #ff0000;
+    }
+
     &[hidden] {
       display: none;
     }
